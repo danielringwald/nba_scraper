@@ -1,3 +1,4 @@
 /nba_scraper/data/*
+!/nba_scraper/data/.gitkeep
 __pycache__
 nba_scraper_venv
