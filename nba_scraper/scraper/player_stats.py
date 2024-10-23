@@ -1,33 +1,29 @@
-import requests
 from bs4 import BeautifulSoup
 import pandas as pd
-from config import SEASON_MONTHS, YEARS
+from ..configuration.global_config import SEASON_MONTHS, YEARS, DATA_FOLDER
+from ..configuration.schedule_and_results import DIRECTORY_PATH
 import time
+from .common_scraper import CommonScarper
+from ..utils import Utils
+import logging
 
-class NBAScraper:
+CURRENT_DATA_FOLDER = DATA_FOLDER + DIRECTORY_PATH
+
+
+class PlayerStatsScraper:
     def __init__(self, base_url):
         self.base_url = base_url
-
-    def fetch_page(self, endpoint):
-        """Fetches the HTML content of the page."""
-        url = f"https://www.basketball-reference.com/{endpoint}"
-        response = requests.get(url)
-        if response.status_code == 200:
-            return response.content
-        else:
-            print(f"Error: Unable to fetch data from {url}")
-            return None
 
     def parse_statistics(self, html_content):
         """Parses the HTML content and extracts the relevant data."""
         soup = BeautifulSoup(html_content, 'html.parser')
-        
+
         # Find the table (this example assumes the stats are in a table)
         table = soup.find("div", {"id": "div_schedule"})
-        
+
         # Extract table headers
         headers = [th.text for th in table.find('thead').find_all('th')]
-        
+
         # Extract table rows
         body_headers = []
         rows = []
@@ -37,7 +33,7 @@ class NBAScraper:
         for i, tr in enumerate(table.find('tbody').find_all('tr')):
             row = [td.text for td in tr.find_all('td')]
             rows.append(row)
-        
+
         body_rows = []
         for i in range(len(body_headers)):
             body_rows.append(body_headers[i] + rows[i])
@@ -46,28 +42,26 @@ class NBAScraper:
         df = pd.DataFrame(body_rows, columns=headers)
         return df
 
-    def save_to_csv(self, df, filename):
-        """Saves the DataFrame to a CSV file."""
-        df.to_csv(filename, index=False)
-        print(f"Data saved to {filename}")
-
-    def scrape_nba_stats(self, endpoint, output_file):
-        """Main function to scrape stats and save to CSV."""
-        html_content = self.fetch_page(endpoint)
-        if html_content:
-            stats_df = self.parse_statistics(html_content)
-            self.save_to_csv(stats_df, output_file)
 
 if __name__ == "__main__":
     # Example usage
     base_url = "https://www.basketball-reference.com"
 
-    scraper = NBAScraper(base_url)
+    scraper = PlayerStatsScraper(base_url)
     for year in YEARS:
         for month in SEASON_MONTHS:
+            file_name = year + "_" + month + "_games_result.csv"
+            output_file = CURRENT_DATA_FOLDER + file_name
+
+            if Utils.is_file_in_directory(file_name, CURRENT_DATA_FOLDER):
+                logging.info(
+                    "File {} already exists. Continuing...".format(file_name))
+                continue
+
             endpoint = "leagues/NBA_" + year + "_games-" + month + ".html"
-            output_file = "monthly_scores/" + year + "_" + month + "_games_result.csv"
-            scraper.scrape_nba_stats(endpoint, output_file)
-            
+
+            CommonScarper.scrape_nba_stats(
+                endpoint, output_file, parse_statistics_method=scraper.parse_statistics)
+
             # To avoid being rate-limited
             time.sleep(5)
