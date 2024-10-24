@@ -1,3 +1,5 @@
+from .global_config import DATA_FOLDER
+
 DATE = "date"
 START_TIME = "start_time"
 AWAY_TEAM = "away_team"
@@ -11,4 +13,5 @@ LENGTH_OF_GAME = "length_of_game"
 ARENA = "arena"
 NOTES = "notes"
 
-DIRECTORY_PATH = "schedule_and_results/"
+
+DIRECTORY_PATH = DATA_FOLDER + "schedule_and_results/"
