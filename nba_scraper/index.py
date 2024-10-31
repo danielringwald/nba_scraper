@@ -5,14 +5,16 @@ import dash_bootstrap_components as dbc
 import pandas as pd
 from .data_collector import get_nba_data_by_year_and_directory, get_total_results_by_team, WINNER
 import nba_scraper.configuration.schedule_and_results as sar
-from .configuration.global_config import NBA_TEAMS 
+from .configuration.global_config import NBA_TEAMS, YEARS
 
 # df = get_nba_data_by_year_and_directory(
 #     2024, sar.DIRECTORY_PATH)
 # df[sar.DATE] = pd.to_datetime(df[sar.DATE], format="%a, %b %d, %Y")
 # df = df.sort_values(by=sar.DATE)
-# 
+#
 # total_results = get_total_results_by_team(df).to_frame().reset_index()
+
+SELECTED_YEAR = max(YEARS)
 
 # Initialize Dash app
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
@@ -29,9 +31,9 @@ app.layout = dbc.Container([
             {'label': str(home_team), 'value': home_team}
             for home_team in NBA_TEAMS
         ],
-        # Default to the first team from alpabetical order
-        # value=df[sar.HOME_TEAM].min(),
-        clearable=False
+        # Default to the first team in alpabetical order
+        value=[],
+        clearable=True
     ),
 
     # Table to display games
@@ -46,7 +48,6 @@ app.layout = dbc.Container([
         #     {'label': str(team), 'value': team}
         #     for team in sorted(df[sar.HOME_TEAM].unique())
         # ],
-        # Default to the first team from alpabetical order
         value=[],
         multi=True
     ),
@@ -60,13 +61,12 @@ app.layout = dbc.Container([
     Output('home-team-results-container', 'children'),
     [Input('home-team-dropdown', 'value')]
 )
-def update_home_team_results_table(selected_year):
+def update_home_team_results_table(team):
 
-    df = get_nba_data_by_year_and_directory(selected_year, sar.DIRECTORY_PATH)
-    print(df[sar.HOME_TEAM].unique())
+    df = get_nba_data_by_year_and_directory(SELECTED_YEAR, sar.DIRECTORY_PATH)
 
     # Filter data based on the selected year
-    filtered_df = (df[df[sar.HOME_TEAM] == selected_year]
+    filtered_df = (df[df[sar.HOME_TEAM] == NBA_TEAMS[team]]
                    ).sort_values(by=sar.DATE)
 
     # Create a Dash DataTable
@@ -77,9 +77,9 @@ def update_home_team_results_table(selected_year):
     Output('team-result-container', 'children'),
     [Input('team-result-dropdown', 'value')]
 )
-def update_team_result_table(teams: list, selected_year):
+def update_team_result_table(teams: list):
 
-    df = get_nba_data_by_year_and_directory(selected_year, sar.DIRECTORY_PATH)
+    df = get_nba_data_by_year_and_directory(SELECTED_YEAR, sar.DIRECTORY_PATH)
 
     if not teams:
         filtered_df = total_results

@@ -5,7 +5,6 @@ from ..configuration.player_stats import DATA_DIRECTORY_PATH
 import time
 from .common_scraper import CommonScarper
 from ..utils import Utils
-import logging
 
 
 class PlayerStatsScraper:

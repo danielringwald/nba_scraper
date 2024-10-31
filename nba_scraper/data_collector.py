@@ -24,7 +24,8 @@ def collect_data_from_csv_files(csv_files, directory=""):
     # Change name to own defined header
     collected_data.columns = HeaderCreator.create_schedule_and_results_header()
 
-    collected_data[sar.DATE] = pd.to_datetime(df[sar.DATE], format="%a, %b %d, %Y")
+    collected_data[sar.DATE] = pd.to_datetime(
+        collected_data[sar.DATE], format="%a, %b %d, %Y")
     collected_data = collected_data.sort_values(by=sar.DATE)
     return collected_data
 
