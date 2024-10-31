@@ -1,4 +1,7 @@
 import requests
+import os
+import time
+from ..utils import Utils
 
 
 class CommonScarper:
@@ -18,8 +21,11 @@ class CommonScarper:
             return None
 
     @staticmethod
-    def save_to_csv(df, filename):
+    def save_to_csv(df, filename: str):
         """Saves the DataFrame to a CSV file."""
+        directory_path = filename.rsplit("/", 1)[0]
+        os.makedirs(directory_path, exist_ok=True)
+        
         df.to_csv(filename, index=False)
         print(f"Data saved to {filename}")
 
@@ -37,3 +43,11 @@ class CommonScarper:
         html_content = CommonScarper.fetch_page(endpoint)
         if html_content:
             return parse_statistics_method(html_content)
+        
+    @staticmethod
+    def scrape_and_save_data(scraper, endpoint, output_file):
+        CommonScarper.scrape_nba_stats(
+            endpoint, output_file, parse_statistics_method=scraper.parse_statistics)
+
+        # To avoid being rate-limited by bbref
+        time.sleep(4)

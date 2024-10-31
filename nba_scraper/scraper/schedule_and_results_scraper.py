@@ -1,13 +1,12 @@
 from bs4 import BeautifulSoup
 import pandas as pd
-from ..configuration.global_config import SEASON_MONTHS, YEARS, DATA_FOLDER, CORONA_SEASON_MONTHS
+from ..configuration.global_config import SEASON_MONTHS, YEARS, CORONA_SEASON_MONTHS
 from ..configuration.schedule_and_results import DIRECTORY_PATH
-import time
 from .common_scraper import CommonScarper
 import os
 from ..utils import Utils
 
-CURRENT_DATA_FOLDER = DATA_FOLDER + DIRECTORY_PATH
+CURRENT_DATA_FOLDER = DIRECTORY_PATH
 
 
 class ScheduleAndResultsScraper:
@@ -55,23 +54,19 @@ def _choose_season_months(year):
 if __name__ == "__main__":
     # Example usage
     base_url = "https://www.basketball-reference.com"
-    print(os.getcwd())
 
     scraper = ScheduleAndResultsScraper(base_url)
     for year in YEARS:
         for month in _choose_season_months(year):
             file_name = year + "_" + month + "_games_result.csv"
-            output_file = CURRENT_DATA_FOLDER + file_name
 
+            endpoint = "leagues/NBA_" + year + "_games-" + month + ".html"
+
+            output_file = CURRENT_DATA_FOLDER + file_name
+            
             if Utils.is_file_in_directory(file_name, CURRENT_DATA_FOLDER):
                 print(
                     "File {} already exists. Continuing...".format(file_name))
                 continue
-
-            endpoint = "leagues/NBA_" + year + "_games-" + month + ".html"
-
-            CommonScarper.scrape_nba_stats(
-                endpoint, output_file, parse_statistics_method=scraper.parse_statistics)
-
-            # To avoid being rate-limited
-            time.sleep(4)
+            
+            CommonScarper.scrape_and_save_data(scraper, endpoint, output_file)

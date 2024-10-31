@@ -1,16 +1,12 @@
-import os
 import pandas as pd
-import matplotlib.pyplot as plt
-from utils import Utils
-from header_creator import HeaderCreator
+from .utils import Utils
+from .header_creator import HeaderCreator
 import nba_scraper.configuration.schedule_and_results as sar
-
 
 WINNER = "winner"
 
 
 def get_nba_data_by_year_and_directory(year, directory=".") -> pd.DataFrame:
-    collected_dataframe = pd.DataFrame()
 
     csv_data_files = Utils.get_csv_files_from_directory_containing_substring(
         str(year), directory)
@@ -27,6 +23,9 @@ def collect_data_from_csv_files(csv_files, directory=""):
 
     # Change name to own defined header
     collected_data.columns = HeaderCreator.create_schedule_and_results_header()
+
+    collected_data[sar.DATE] = pd.to_datetime(df[sar.DATE], format="%a, %b %d, %Y")
+    collected_data = collected_data.sort_values(by=sar.DATE)
     return collected_data
 
 

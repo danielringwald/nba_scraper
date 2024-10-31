@@ -14,8 +14,13 @@ class Utils:
     def get_csv_files_from_directory_containing_substring(substring: str, directory=".") -> list[str]:
         """Returns a list of all .csv files in the specified directory that contain {substring}."""
 
-        csv_files = [file for file in os.listdir(
-            directory) if Utils._has_file_ending_and_contains_substring(".csv", substring, file)]
+        try:
+            directory_file_list = os.listdir(directory)
+        except FileNotFoundError:
+            print(f"Directory {directory} not found.")
+            raise FileNotFoundError(f"Directory {directory} not found.")
+
+        csv_files = [file for file in directory_file_list if Utils._has_file_ending_and_contains_substring(".csv", substring, file)]
         return csv_files
 
     @staticmethod
@@ -24,4 +29,8 @@ class Utils:
 
     @staticmethod
     def is_file_in_directory(file: str, directory: str) -> bool:
+        
+        if not os.path.isdir(directory):
+            return False
+        
         return file in os.listdir(directory)

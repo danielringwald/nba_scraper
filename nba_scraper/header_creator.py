@@ -1,4 +1,4 @@
-import configuration.schedule_and_results as sar
+import nba_scraper.configuration.schedule_and_results as sar
 
 
 class HeaderCreator:
