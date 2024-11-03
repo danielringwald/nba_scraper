@@ -3,7 +3,6 @@ import pandas as pd
 from ..configuration.global_config import SEASON_MONTHS, YEARS, CORONA_SEASON_MONTHS
 from ..configuration.schedule_and_results import DIRECTORY_PATH
 from .common_scraper import CommonScarper
-import os
 from ..utils import Utils
 
 CURRENT_DATA_FOLDER = DIRECTORY_PATH
@@ -63,10 +62,10 @@ if __name__ == "__main__":
             endpoint = "leagues/NBA_" + year + "_games-" + month + ".html"
 
             output_file = CURRENT_DATA_FOLDER + file_name
-            
+
             if Utils.is_file_in_directory(file_name, CURRENT_DATA_FOLDER):
                 print(
                     "File {} already exists. Continuing...".format(file_name))
                 continue
-            
+
             CommonScarper.scrape_and_save_data(scraper, endpoint, output_file)

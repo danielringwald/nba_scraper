@@ -1,4 +1,4 @@
-from .global_config import DATA_FOLDER
+from .global_config import DATA_FOLDER, PLAYOFF_START
 
 DATE = "date"
 START_TIME = "start_time"
