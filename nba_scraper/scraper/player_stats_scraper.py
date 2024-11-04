@@ -66,8 +66,8 @@ if __name__ == "__main__":
 
         endpoint = player_endpoint
 
-        player_file_ending = str(
-            player_name).lower().replace(" ", "_") + ".csv"
+        player_file_ending = Utils.lowercase_non_space_file_encoding(
+            player_name)
         output_file = DATA_DIRECTORY_PATH + player_file_ending
 
         if Utils.is_file_in_directory(player_file_ending, DATA_DIRECTORY_PATH):

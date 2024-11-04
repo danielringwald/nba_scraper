@@ -2,6 +2,8 @@ import pandas as pd
 from .utils import Utils
 from .header_creator import HeaderCreator
 import nba_scraper.configuration.schedule_and_results as sar
+import nba_scraper.configuration.player_stats as ps
+from .configuration.global_config import DATA_FOLDER, ACTIVE_PLAYERS_FILE, ACTIVE_PLAYERS_COLUMN_NAMES
 
 WINNER = "winner"
 TEAM = "Team"
@@ -66,3 +68,13 @@ def get_total_results_by_team(match_results_df: pd.DataFrame):
     season_results = season_results.to_frame().reset_index()
     season_results.columns = [TEAM, "Games Won"]
     return season_results
+
+
+def get_active_players():
+    active_players = pd.read_csv(DATA_FOLDER + ACTIVE_PLAYERS_FILE)
+    return active_players[ACTIVE_PLAYERS_COLUMN_NAMES[0]]
+
+
+def get_player_stats(player_name, directory="."):
+    player_file = Utils.lowercase_non_space_file_encoding(player_name)
+    return pd.read_csv(directory + player_file)

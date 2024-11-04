@@ -2,10 +2,13 @@ import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
-from .data_collector import get_nba_data_by_year_and_directory, get_total_results_by_team, TEAM
+from .data_collector import get_nba_data_by_year_and_directory, get_total_results_by_team, TEAM, get_player_stats
 from .utils import Utils
 import nba_scraper.configuration.schedule_and_results as sar
+import nba_scraper.configuration.player_stats as ps
 from .configuration.global_config import NBA_TEAMS, YEARS
+from .pages.teams import TeamPage
+from .pages.players import PlayerPage
 
 
 SEASON = max(YEARS)
@@ -13,58 +16,23 @@ SEASON = max(YEARS)
 # Initialize Dash app
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
+
 # Layout of the dashboard
 app.layout = dbc.Container([
-    html.H1("NBA Games Dashboard"),
+    dcc.Location(id='url', refresh=False),
+    html.Div(id='page-content')
+], fluid=True)
 
-    html.H2(f"Select season"),
-    # Dropdown menu for filtering by year
-    html.Label("Select Season"),
-    dcc.Dropdown(
-        id='season-dropdown',
-        options=[
-            {'label': str(season), 'value': season}
-            for season in YEARS
-        ],
-        # Default to the first team in alpabetical order
-        value=SEASON,
-        clearable=False
-    ),
-    dcc.Store(id='season-store'),
 
-    html.H2(f"Home games result in the season {SEASON}"),
-    # Dropdown menu for filtering by year
-    html.Label("Select Home Team"),
-    dcc.Dropdown(
-        id='home-team-dropdown',
-        options=[
-            {'label': str(home_team), 'value': home_team}
-            for home_team in NBA_TEAMS
-        ],
-        # Default to the first team in alpabetical order
-        value=None,
-        clearable=True
-    ),
-
-    # Table to display games
-    html.Div(id='home-team-results-container'),
-
-    html.H2("Total results for the season"),
-    # Dropdown menu for filtering by year
-    html.Label("Select Team"),
-    dcc.Dropdown(
-        id='team-result-dropdown',
-        options=[
-            {'label': str(home_team), 'value': home_team}
-            for home_team in NBA_TEAMS
-        ],
-        value=None,
-        multi=True
-    ),
-
-    # Table to display games
-    html.Div(id='team-result-container')
-])
+@app.callback(
+    Output('page-content', 'children'),
+    Input('url', 'pathname')
+)
+def display_page(pathname):
+    if pathname == '/players':
+        return PlayerPage.player_layout()
+    else:
+        return TeamPage.team_page_layout()
 
 
 @app.callback(
@@ -118,3 +86,19 @@ def update_team_result_table(selected_season):
 
     SEASON = selected_season
     return SEASON
+
+
+# PLAYER DASHBOARD
+
+
+@app.callback(
+    Output('player-stats-container', 'children'),
+    [Input('player-dropdown', 'value')]
+)
+def update_home_team_results_table(player_name):
+    if player_name is None:
+        return "No player selected"
+    df = get_player_stats(player_name, ps.DATA_DIRECTORY_PATH)
+
+    # Create a Dash DataTable
+    return dbc.Table.from_dataframe(df, striped=True, bordered=True, hover=True)

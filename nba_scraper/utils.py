@@ -40,3 +40,7 @@ class Utils:
     def convert_list_using_dictionary(list_to_convert: list, dictionary: dict):
         converted_list = [dictionary[entry] for entry in list_to_convert]
         return converted_list
+
+    @staticmethod
+    def lowercase_non_space_file_encoding(file_name, file_ending=".csv"):
+        return str(file_name).lower().replace(" ", "_") + file_ending
