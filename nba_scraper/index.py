@@ -2,7 +2,7 @@ import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
-from .data_collector import get_nba_data_by_year_and_directory, get_total_results_by_team, TEAM, get_player_stats
+from .data_collector import get_nba_data_by_year_and_directory, get_total_results_by_team, TEAM, get_player_stats, get_top_player_stats
 from .utils import Utils
 import nba_scraper.configuration.schedule_and_results as sar
 import nba_scraper.configuration.player_stats as ps
@@ -102,3 +102,16 @@ def update_home_team_results_table(player_name):
 
     # Create a Dash DataTable
     return dbc.Table.from_dataframe(df, striped=True, bordered=True, hover=True)
+
+
+@app.callback(
+    Output('top-player-stats-container', 'children'),
+    [Input("url", "pathname")]
+)
+def top_player_stats(_):
+    df = get_top_player_stats("TRB", "2023-24").iloc[0:10]
+
+    filtered_df = df[["Player", "TRB", "PTS", "Season", "Team"]]
+
+    # Create a Dash DataTable
+    return dbc.Table.from_dataframe(filtered_df, striped=True, bordered=True, hover=True)

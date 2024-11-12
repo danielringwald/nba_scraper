@@ -27,4 +27,7 @@ class PlayerPage(Page):
                 clearable=True
             ),
             html.Div(id='player-stats-container'),
+
+            html.H2(f"Top Player Stats"),
+            html.Div(id='top-player-stats-container'),
         ])

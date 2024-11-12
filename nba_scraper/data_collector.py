@@ -4,6 +4,7 @@ from .header_creator import HeaderCreator
 import nba_scraper.configuration.schedule_and_results as sar
 import nba_scraper.configuration.player_stats as ps
 from .configuration.global_config import DATA_FOLDER, ACTIVE_PLAYERS_FILE, ACTIVE_PLAYERS_COLUMN_NAMES
+import functools
 
 WINNER = "winner"
 TEAM = "Team"
@@ -78,3 +79,21 @@ def get_active_players():
 def get_player_stats(player_name, directory="."):
     player_file = Utils.lowercase_non_space_file_encoding(player_name)
     return pd.read_csv(directory + player_file)
+
+
+@functools.cache
+def get_top_player_stats(statistic, season):
+    csv_data_files = Utils.get_csv_files_from_directory_containing_substring(
+        "", ps.DATA_DIRECTORY_PATH)
+
+    collected_data = pd.DataFrame()
+
+    for csv_file in csv_data_files:
+        df = pd.read_csv(ps.DATA_DIRECTORY_PATH + csv_file)
+        df["Player"] = csv_file.split(".")[0]
+        collected_data = pd.concat([collected_data, df])
+
+    collected_data = Utils.get_filtered_by_value(
+        collected_data, "Season", season)
+
+    return collected_data.sort_values(by=[statistic], ascending=False)

@@ -1,4 +1,5 @@
 import os
+import pandas as pd
 
 
 class Utils:
@@ -44,3 +45,7 @@ class Utils:
     @staticmethod
     def lowercase_non_space_file_encoding(file_name, file_ending=".csv"):
         return str(file_name).lower().replace(" ", "_") + file_ending
+
+    @staticmethod
+    def get_filtered_by_value(df, column, value) -> pd.DataFrame:
+        return df[df[column] == value]
