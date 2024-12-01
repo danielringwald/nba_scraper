@@ -35,6 +35,9 @@ def display_page(pathname):
         return TeamPage.team_page_layout()
 
 
+# TEAMS DASHBOARD
+
+
 @app.callback(
     Output('home-team-results-container', 'children'),
     [Input('home-team-dropdown', 'value'),
