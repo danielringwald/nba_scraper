@@ -2,6 +2,7 @@ import requests
 import os
 import time
 from ..utils import Utils
+import pandas as pd
 
 
 class CommonScarper:
@@ -21,21 +22,22 @@ class CommonScarper:
             return None
 
     @staticmethod
-    def save_to_csv(df, filename: str):
+    def save_to_csv(df: pd.DataFrame, filename: str):
         """Saves the DataFrame to a CSV file."""
         directory_path = filename.rsplit("/", 1)[0]
         os.makedirs(directory_path, exist_ok=True)
-        
+
         df.to_csv(filename, index=False)
         print(f"Data saved to {filename}")
 
     @staticmethod
-    def scrape_nba_stats(endpoint, output_file, parse_statistics_method):
+    def scrape_nba_stats(endpoint: str, output_file: str, parse_statistics_method, save=True):
         """Main function to scrape stats and save to CSV."""
         html_content = CommonScarper.fetch_page(endpoint)
         if html_content:
             stats_df = parse_statistics_method(html_content)
-            CommonScarper.save_to_csv(stats_df, output_file)
+            if save:
+                CommonScarper.save_to_csv(stats_df, output_file)
 
     @staticmethod
     def scrape_nba_stats_df(endpoint, parse_statistics_method):
@@ -43,11 +45,11 @@ class CommonScarper:
         html_content = CommonScarper.fetch_page(endpoint)
         if html_content:
             return parse_statistics_method(html_content)
-        
+
     @staticmethod
-    def scrape_and_save_data(scraper, endpoint, output_file):
+    def scrape_and_save_data(scraper, endpoint, output_file, save=True):
         CommonScarper.scrape_nba_stats(
-            endpoint, output_file, parse_statistics_method=scraper.parse_statistics)
+            endpoint, output_file, parse_statistics_method=scraper.parse_statistics, save=save)
 
         # To avoid being rate-limited by bbref
         time.sleep(4)

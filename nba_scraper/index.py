@@ -2,13 +2,14 @@ import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
-from .data_collector import get_nba_data_by_year_and_directory, get_total_results_by_team, TEAM, get_player_stats, get_top_player_stats
+from .data_collector import get_nba_data_by_year_and_directory, get_total_results_by_team, TEAM, get_player_stats, get_top_player_stats, get_box_score_for_game
 from .utils import Utils
 import nba_scraper.configuration.schedule_and_results as sar
 import nba_scraper.configuration.player_stats as ps
 from .configuration.global_config import NBA_TEAMS, YEARS
 from .pages.teams import TeamPage
 from .pages.players import PlayerPage
+from .pages.box_scores import BoxScorePage
 
 
 SEASON = max(YEARS)
@@ -31,6 +32,8 @@ app.layout = dbc.Container([
 def display_page(pathname):
     if pathname == '/players':
         return PlayerPage.player_layout()
+    elif pathname == '/boxscores':
+        return BoxScorePage.box_score_page_layout()
     else:
         return TeamPage.team_page_layout()
 
@@ -118,3 +121,16 @@ def top_player_stats(_):
 
     # Create a Dash DataTable
     return dbc.Table.from_dataframe(filtered_df, striped=True, bordered=True, hover=True)
+
+
+# BOX SCORE DASHBOARD
+
+
+@app.callback(
+    Output('box-score-container', 'children'),
+    [Input("box-score-dropdown", "value")]
+)
+def fetch_box_score_game(game: str):
+    df = get_box_score_for_game(game)
+
+    return dbc.Table.from_dataframe(df, striped=True, bordered=True, hover=True)

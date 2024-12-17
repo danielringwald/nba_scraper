@@ -3,8 +3,10 @@ from .utils import Utils
 from .header_creator import HeaderCreator
 import nba_scraper.configuration.schedule_and_results as sar
 import nba_scraper.configuration.player_stats as ps
+import nba_scraper.configuration.box_score as bs
 from .configuration.global_config import DATA_FOLDER, ACTIVE_PLAYERS_FILE, ACTIVE_PLAYERS_COLUMN_NAMES
 import functools
+import os
 
 WINNER = "winner"
 TEAM = "Team"
@@ -81,6 +83,18 @@ def get_player_stats(player_name, directory="."):
     return pd.read_csv(directory + player_file)
 
 
+def format_name_from_file(name: str):
+    parts = name.split("_")
+    formatted_name = []
+
+    for part in parts:
+        if "." in part:
+            part = part.upper()
+        formatted_name.append(part.capitalize())
+
+    return " ".join(formatted_name)
+
+
 @functools.cache
 def get_top_player_stats(statistic, season):
     csv_data_files = Utils.get_csv_files_from_directory_containing_substring(
@@ -90,10 +104,17 @@ def get_top_player_stats(statistic, season):
 
     for csv_file in csv_data_files:
         df = pd.read_csv(ps.DATA_DIRECTORY_PATH + csv_file)
-        df["Player"] = csv_file.split(".")[0]
+        df["Player"] = format_name_from_file(csv_file.split(".")[0])
+
         collected_data = pd.concat([collected_data, df])
 
     collected_data = Utils.get_filtered_by_value(
         collected_data, "Season", season)
 
     return collected_data.sort_values(by=[statistic], ascending=False)
+
+
+def get_box_score_for_game(game: str) -> pd.DataFrame:
+    folder_path = bs.DIRECTORY_PATH + "total_box_scores/"
+
+    return pd.read_csv(folder_path + game)

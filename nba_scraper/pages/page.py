@@ -16,6 +16,8 @@ class Page:
                             dcc.Link("Teams", href="/", className="nav-link text-white text-nowrap")),
                         dbc.NavItem(
                             dcc.Link("Players", href="/players", className="nav-link text-white text-nowrap")),
+                        dbc.NavItem(
+                            dcc.Link("Box Scores", href="/boxscores", className="nav-link text-white text-nowrap")),
                     ],
                     # Center the nav items
                     justified=True,
