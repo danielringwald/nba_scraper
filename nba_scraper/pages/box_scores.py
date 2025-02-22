@@ -19,7 +19,8 @@ class BoxScorePage(Page):
             dcc.Dropdown(
                 id='box-score-dropdown',
                 options=[
-                    {'label': str(game), 'value': game}
+                    {'label': BoxScorePage._format_game_name(game),
+                     'value': BoxScorePage._format_game_name(game)}
                     for game in games
                 ],
                 value=None,
@@ -32,3 +33,14 @@ class BoxScorePage(Page):
         all_games = os.listdir(DIRECTORY_PATH + "total_box_scores/")
 
         return [game for game in all_games if int(game[:8]) > 20241001]
+
+    def _format_game_name(game):
+        game_name = ""
+
+        game_name += game[:4] + "-"
+        game_name += game[4:6] + "-"
+        game_name += game[6:8] + " at "
+        game_name += game[9:12] + " : "
+        game_name += game[13:16]
+
+        return game_name

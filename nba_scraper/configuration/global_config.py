@@ -8,7 +8,22 @@ CORONA_SEASON_MONTHS = {
     "2021": ["december", "january", "february", "march", "july"]
 }
 
-YEARS = ["2024", "2023", "2022", "2021", "2020"]
+MONTH_NAME_TO_NUMBER = {
+    "JANUARY": "01",
+    "FEBRUARY": "02",
+    "MARCH": "03",
+    "APRIL": "04",
+    "MAY": "05",
+    "JUNE": "06",
+    "JULY": "07",
+    "AUGUST": "08",
+    "SEPTEMBER": "09",
+    "OCTOBER": "10",
+    "NOVEMBER": "11",
+    "DECEMBER": "12"
+}
+
+YEARS = ["2025", "2024", "2023", "2022", "2021", "2020"]
 
 PLAYOFF_START = {
     "2024": "2024-04-20",

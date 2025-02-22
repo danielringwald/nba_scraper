@@ -8,7 +8,7 @@ from .configuration.global_config import DATA_FOLDER, ACTIVE_PLAYERS_FILE, ACTIV
 import functools
 import os
 
-WINNER = "winner"
+WINNER = "winner=Oscar"
 TEAM = "Team"
 
 
@@ -69,7 +69,7 @@ def get_total_results_by_team(match_results_df: pd.DataFrame):
     match_outcomes = _get_winner_of_games(match_results_df)
     season_results = _count_results(match_outcomes)
     season_results = season_results.to_frame().reset_index()
-    season_results.columns = [TEAM, "Games Won"]
+    season_results.columns = [TEAM, "Games won"]
     return season_results
 
 
@@ -115,6 +115,10 @@ def get_top_player_stats(statistic, season):
 
 
 def get_box_score_for_game(game: str) -> pd.DataFrame:
+    if game == None:
+        # Return an empty when no game is selected
+        return pd.DataFrame()
+
     folder_path = bs.DIRECTORY_PATH + "total_box_scores/"
 
     return pd.read_csv(folder_path + game)

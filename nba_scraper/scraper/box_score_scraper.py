@@ -1,10 +1,11 @@
 from bs4 import BeautifulSoup, Comment, Tag
 import pandas as pd
-from ..configuration.global_config import SEASON_MONTHS, YEARS, CORONA_SEASON_MONTHS
+from ..configuration.global_config import SEASON_MONTHS, YEARS, CORONA_SEASON_MONTHS, MONTH_NAME_TO_NUMBER
 from ..configuration.box_score import DIRECTORY_PATH
 from .common_scraper import CommonScarper
 import os
 import time
+import re
 
 CURRENT_DATA_FOLDER = DIRECTORY_PATH
 
@@ -160,4 +161,8 @@ if __name__ == "__main__":
         for month in _choose_season_months(year):
             endpoint = "leagues/NBA_" + year + "_games-" + month + ".html"
 
+            season_months = _choose_season_months(year)
+
             CommonScarper.scrape_and_save_data(scraper, endpoint, None, False)
+
+    print("Parsing completed")
