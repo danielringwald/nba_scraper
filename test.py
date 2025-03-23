@@ -1,13 +1,43 @@
-def format_name_from_file(name: str):
-    parts = name.split("_")
-    formatted_name = []
+import unittest
+import pandas as pd
 
-    for part in parts:
-        if "." in part:
-            part = part.upper()
-        formatted_name.append(part.capitalize())
+from nba_scraper.utils import Utils
+import nba_scraper.data_collector as dc
+import nba_scraper.configuration.global_config as gc
 
-    return " ".join(formatted_name)
+SEASON_AND_MONTHS_OF_2025 = [("2024", "10"), ("2024", "11"), ("2024", "12"), ("2025", "01"), (
+    "2025", "02"), ("2025", "03"), ("2025", "04"), ("2025", "05"), ("2025", "06")]
 
 
-print(format_name_from_file("j.c._jersild"))
+class TestUtils(unittest.TestCase):
+
+    def test_choose_season_months(self):
+
+        season_months = Utils.choose_season_months("2025")
+        self.assertEqual(season_months, gc.SEASON_MONTHS)
+
+        # Corona months
+        season_months = Utils.choose_season_months("2020")
+        self.assertEqual(season_months, gc.CORONA_SEASON_MONTHS["2020"])
+
+        # Corona months
+        season_months = Utils.choose_season_months("2021")
+        self.assertEqual(season_months, gc.CORONA_SEASON_MONTHS["2021"])
+
+    def test_get_year_and_months_of_season(self):
+
+        season_months = Utils._get_year_and_months_of_season(2025)
+        self.assertEquals(season_months, SEASON_AND_MONTHS_OF_2025)
+
+
+class TestDataCollector(unittest.TestCase):
+
+    def test_get_box_scores_by_team_and_season(self):
+
+        box_scores = dc.get_box_scores_by_team_and_season("ATL", 2024)
+        print(box_scores)
+        self.assertEquals(box_scores, pd.DataFrame())
+
+
+if __name__ == "__main__":
+    unittest.main()

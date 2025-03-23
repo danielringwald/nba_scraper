@@ -59,5 +59,14 @@ class TeamPage(Page):
             ),
 
             # Table to display games
-            html.Div(id='team-result-container')
+            html.Div(id='team-result-container'),
+
+            html.H2("This is a data graph"),
+
+            # Table for generic plotting
+            html.Div(id="div_data_graph", children=[]),
+
+            html.Br(),
+
+            dcc.Graph(id="data_graph", figure={})
         ])

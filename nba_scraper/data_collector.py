@@ -13,14 +13,13 @@ TEAM = "Team"
 
 
 def get_nba_data_by_year_and_directory(year, directory=".", playoff=False) -> pd.DataFrame:
-
     csv_data_files = Utils.get_csv_files_from_directory_containing_substring(
         str(year), directory)
-
+    print("Data files", csv_data_files)
     return collect_data_from_csv_files(csv_data_files, directory, playoff)
 
 
-def collect_data_from_csv_files(csv_files, directory="", playoff=False):
+def collect_data_from_csv_files(csv_files: list[str], directory="", playoff=False) -> pd.DataFrame:
     collected_data = pd.DataFrame()
 
     for csv_file in csv_files:
@@ -122,3 +121,41 @@ def get_box_score_for_game(game: str) -> pd.DataFrame:
     folder_path = bs.DIRECTORY_PATH + "total_box_scores/"
 
     return pd.read_csv(folder_path + game)
+
+
+def get_box_scores_by_team_and_season(team: str, season: int) -> pd.DataFrame:
+    """
+        Gets all the games where a team has played.
+
+        This currently counts regular season games, post-season games, and play-in games
+    """
+    years_and_months_of_season = Utils._get_year_and_months_of_season(season)
+
+    all_games_played_by_team = []
+    for year_and_month in years_and_months_of_season:
+        data_files_csv = Utils.get_csv_files_from_directory_containing_substring(
+            bs.BOX_SCORE_DATA_FILE_TEMPLATE.format(year_and_month[0], year_and_month[1]), bs.TOTAL_BOX_SCORES_PATH)
+
+        data_files_csv = [
+            data_file for data_file in data_files_csv if "_" + team in data_file]
+
+        if len(data_files_csv) != 0:
+            all_games_played_by_team += data_files_csv
+
+    return extract_data_from_multiple_csv_files(all_games_played_by_team, bs.TOTAL_BOX_SCORES_PATH)
+
+
+def extract_data_from_multiple_csv_files(csv_files: list[str], directory: str) -> pd.DataFrame:
+    df_result = pd.DataFrame()
+
+    games = [game.removesuffix(".csv") for game in csv_files]
+
+    for csv_file in csv_files:
+        df_result = extract_data_from_csv_file(csv_file, directory)
+
+    return df_result
+
+
+def extract_data_from_csv_file(csv_file: str, directory: str) -> pd.DataFrame:
+    print(pd.read_csv(directory + csv_file))
+    return pd.read_csv(directory + csv_file)

@@ -3,6 +3,7 @@ from dash import dcc, html
 from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
 from .data_collector import get_nba_data_by_year_and_directory, get_total_results_by_team, TEAM, get_player_stats, get_top_player_stats, get_box_score_for_game
+import data_collector as dc
 from .utils import Utils
 import nba_scraper.configuration.schedule_and_results as sar
 import nba_scraper.configuration.player_stats as ps
@@ -10,6 +11,7 @@ from .configuration.global_config import NBA_TEAMS, YEARS
 from .pages.teams import TeamPage
 from .pages.players import PlayerPage
 from .pages.box_scores import BoxScorePage
+import plotly.express as px
 
 
 SEASON = max(YEARS)
@@ -67,7 +69,12 @@ def update_home_team_results_table(team, season=SEASON):
 )
 def update_team_result_table(teams: list, season=SEASON):
 
-    df = get_nba_data_by_year_and_directory(season, sar.DIRECTORY_PATH)
+    try:
+        df = get_nba_data_by_year_and_directory(season, sar.DIRECTORY_PATH)
+    except Exception as e:
+        print("Error fetching data from season {}, exception: {}".format(season, e))
+        return "\nNO DATA WAS FETCHED"
+
     total_results = get_total_results_by_team(df)
 
     if not teams:
@@ -93,6 +100,18 @@ def update_team_result_table(selected_season):
     SEASON = selected_season
     return SEASON
 
+
+@app.callback(
+    [Output(component_id="div_data_graph", component_property="children"),
+     Output(component_id="data_graph", component_property="figure")],
+    [Input(component_id="team-result-dropdown", component_property="value")]
+)
+def data_graph(team_name):
+    print("Team selected:", team_name)
+
+    dc
+
+    fig = px.scatter(df)
 
 # PLAYER DASHBOARD
 

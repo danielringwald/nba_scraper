@@ -5,7 +5,6 @@ from ..configuration.box_score import DIRECTORY_PATH
 from .common_scraper import CommonScarper
 import os
 import time
-import re
 
 CURRENT_DATA_FOLDER = DIRECTORY_PATH
 
@@ -20,9 +19,6 @@ class BoxScoreScraper:
 
         # Find the table (this example assumes the stats are in a table)
         table = soup.find("div", {"id": "div_schedule"})
-
-        # Extract table headers
-        headers = [th.text for th in table.find('thead').find_all('th')]
 
         # Extract table rows
         body_headers = []

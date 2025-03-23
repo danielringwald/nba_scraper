@@ -2,6 +2,7 @@ DATA_FOLDER = "nba_scraper/data/"
 
 SEASON_MONTHS = ["october", "november", "december",
                  "january", "february", "march", "april", "may", "june"]
+
 CORONA_SEASON_MONTHS = {
     "2020": ["october", "november", "december",
              "january", "february", "march", "july", "august", "september"],
