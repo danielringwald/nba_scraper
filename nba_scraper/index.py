@@ -3,7 +3,6 @@ from dash import dcc, html
 from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
 from .data_collector import get_nba_data_by_year_and_directory, get_total_results_by_team, TEAM, get_player_stats, get_top_player_stats, get_box_score_for_game
-import data_collector as dc
 from .utils import Utils
 import nba_scraper.configuration.schedule_and_results as sar
 import nba_scraper.configuration.player_stats as ps
@@ -109,9 +108,7 @@ def update_team_result_table(selected_season):
 def data_graph(team_name):
     print("Team selected:", team_name)
 
-    dc
-
-    fig = px.scatter(df)
+    fig = px.scatter()
 
 # PLAYER DASHBOARD
 

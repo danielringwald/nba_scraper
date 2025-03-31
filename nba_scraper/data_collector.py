@@ -6,7 +6,7 @@ import nba_scraper.configuration.player_stats as ps
 import nba_scraper.configuration.box_score as bs
 from .configuration.global_config import DATA_FOLDER, ACTIVE_PLAYERS_FILE, ACTIVE_PLAYERS_COLUMN_NAMES
 import functools
-import os
+import xarray as xr
 
 WINNER = "winner=Oscar"
 TEAM = "Team"
@@ -27,14 +27,14 @@ def collect_data_from_csv_files(csv_files: list[str], directory="", playoff=Fals
         collected_data = pd.concat([collected_data, df])
 
     # Change name to own defined header
-    collected_data.columns = HeaderCreator.create_schedule_and_results_header()
+    collected_data.columns = HeaderCreator.create_schedule_and_results_headers()
 
     collected_data[sar.DATE] = pd.to_datetime(
         collected_data[sar.DATE], format="%a, %b %d, %Y")
     collected_data = collected_data.sort_values(by=sar.DATE)
 
-    if not playoff:
-        year = csv_files[0].split("_")[0]
+    year = csv_files[0].split("_")[0]
+    if not playoff and year in sar.PLAYOFF_START.values():
         collected_data = collected_data[collected_data[sar.DATE]
                                         < sar.PLAYOFF_START[year]]
 
@@ -127,7 +127,8 @@ def get_box_scores_by_team_and_season(team: str, season: int) -> pd.DataFrame:
     """
         Gets all the games where a team has played.
 
-        This currently counts regular season games, post-season games, and play-in games
+        This currently counts regular season games, post-season games, in-season tournament, 
+        and playoff play-in games
     """
     years_and_months_of_season = Utils._get_year_and_months_of_season(season)
 
@@ -142,20 +143,30 @@ def get_box_scores_by_team_and_season(team: str, season: int) -> pd.DataFrame:
         if len(data_files_csv) != 0:
             all_games_played_by_team += data_files_csv
 
-    return extract_data_from_multiple_csv_files(all_games_played_by_team, bs.TOTAL_BOX_SCORES_PATH)
+    return extract_box_score_data_from_multiple_csv_files(all_games_played_by_team, bs.TOTAL_BOX_SCORES_PATH)
 
 
-def extract_data_from_multiple_csv_files(csv_files: list[str], directory: str) -> pd.DataFrame:
-    df_result = pd.DataFrame()
+def extract_box_score_data_from_multiple_csv_files(csv_files: list[str], directory: str) -> pd.DataFrame:
 
-    games = [game.removesuffix(".csv") for game in csv_files]
+    games_data = []
 
     for csv_file in csv_files:
-        df_result = extract_data_from_csv_file(csv_file, directory)
+        game_df = extract_data_from_csv_file(csv_file, directory)
 
-    return df_result
+        xr_data_array = xr.DataArray(
+            game_df.iloc[:, 1:].values,
+            dims=("Player", "Stats"),
+            coords={
+                "Player": game_df.loc[:, bs.PLAYER].values,
+                "Stats": game_df.columns[1:],
+            }
+        )
+
+        xr_data_array.expand_dims(Game=[csv_file.removesuffix(".csv")])
+        games_data.append(xr_data_array)
+
+    return xr.concat(games_data, dim="Game")
 
 
 def extract_data_from_csv_file(csv_file: str, directory: str) -> pd.DataFrame:
-    print(pd.read_csv(directory + csv_file))
     return pd.read_csv(directory + csv_file)

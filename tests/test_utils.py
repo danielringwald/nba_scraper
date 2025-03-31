@@ -1,6 +1,6 @@
 import unittest
-import nba_scraper.configuration.global_config as gc
 from nba_scraper.utils import Utils
+import nba_scraper.configuration.global_config as gc
 
 
 SEASON_AND_MONTHS_OF_2025 = [("2024", "10"), ("2024", "11"), ("2024", "12"), ("2025", "01"), (
@@ -26,3 +26,7 @@ class TestUtils(unittest.TestCase):
 
         season_months = Utils._get_year_and_months_of_season(2025)
         self.assertEquals(season_months, SEASON_AND_MONTHS_OF_2025)
+
+
+if __name__ == "__main__":
+    unittest.main()
