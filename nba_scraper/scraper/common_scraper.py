@@ -1,8 +1,8 @@
 import requests
 import os
 import time
-from ..utils import Utils
 import pandas as pd
+from collections.abc import Callable
 
 
 class CommonScarper:
@@ -31,7 +31,7 @@ class CommonScarper:
         print(f"Data saved to {filename}")
 
     @staticmethod
-    def scrape_nba_stats(endpoint: str, output_file: str, parse_statistics_method, save=True):
+    def scrape_nba_stats(endpoint: str, output_file: str, parse_statistics_method: function, save=True):
         """Main function to scrape stats and save to CSV."""
         html_content = CommonScarper.fetch_page(endpoint)
         if html_content:
@@ -40,14 +40,14 @@ class CommonScarper:
                 CommonScarper.save_to_csv(stats_df, output_file)
 
     @staticmethod
-    def scrape_nba_stats_df(endpoint, parse_statistics_method):
+    def scrape_nba_stats_df(endpoint, parse_statistics_method: Callable):
         """Main function to scrape stats and save to CSV."""
         html_content = CommonScarper.fetch_page(endpoint)
         if html_content:
             return parse_statistics_method(html_content)
 
     @staticmethod
-    def scrape_and_save_data(scraper, endpoint, output_file, save=True):
+    def scrape_and_save_data(scraper: Callable, endpoint, output_file, save=True):
         CommonScarper.scrape_nba_stats(
             endpoint, output_file, parse_statistics_method=scraper.parse_statistics, save=save)
 
