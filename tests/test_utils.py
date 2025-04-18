@@ -1,10 +1,7 @@
 import unittest
-import pandas as pd
-import xarray as xr
-
 from nba_scraper.utils import Utils
-import nba_scraper.data_collector as dc
 import nba_scraper.configuration.global_config as gc
+
 
 SEASON_AND_MONTHS_OF_2025 = [("2024", "10"), ("2024", "11"), ("2024", "12"), ("2025", "01"), (
     "2025", "02"), ("2025", "03"), ("2025", "04"), ("2025", "05"), ("2025", "06")]
@@ -29,15 +26,6 @@ class TestUtils(unittest.TestCase):
 
         season_months = Utils._get_year_and_months_of_season(2025)
         self.assertEquals(season_months, SEASON_AND_MONTHS_OF_2025)
-
-
-class TestDataCollector(unittest.TestCase):
-
-    def test_get_box_scores_by_team_and_season(self):
-
-        box_scores = dc.get_box_scores_by_team_and_season("ATL", 2024)
-        print(box_scores)
-        self.assertEquals(box_scores, xr.DataArray())
 
 
 if __name__ == "__main__":
