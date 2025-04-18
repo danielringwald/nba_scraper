@@ -7,6 +7,8 @@ TOTAL_BOX_SCORES_PATH = DIRECTORY_PATH + "total_box_scores/"
 # start with yyyymmdd then awayTeam_homeTeam, e.g. 20190202TOR_LAL
 BOX_SCORE_DATA_FILE_TEMPLATE = "{}{}"
 
+BOX_SCORE_YEARS_PARSED = ["2024", "2023", "2022", "2021", "2020"]
+
 PLAYER = "Starters"
 MP = "MP"
 FG = "FG"
