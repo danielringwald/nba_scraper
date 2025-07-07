@@ -31,7 +31,7 @@ class CommonScarper:
         print(f"Data saved to {filename}")
 
     @staticmethod
-    def scrape_nba_stats(endpoint: str, output_file: str, parse_statistics_method: function, save=True):
+    def scrape_nba_stats(endpoint: str, output_file: str, parse_statistics_method: Callable, save=True):
         """Main function to scrape stats and save to CSV."""
         html_content = CommonScarper.fetch_page(endpoint)
         if html_content:
