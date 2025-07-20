@@ -1,9 +1,11 @@
 import os
 import pandas as pd
+from typing import Union, Sequence, TypeVar
 from nba_scraper.configuration.global_config import SEASON_MONTHS, CORONA_SEASON_MONTHS, MONTH_NAME_TO_NUMBER
 
 BOX_SCORE_DATA_FILE_TEMPLATE = "{}{}"
 
+T = TypeVar("T")
 
 class Utils:
 
@@ -63,11 +65,32 @@ class Utils:
         return SEASON_MONTHS
 
     @staticmethod
-    def get_csv_files_from_directory_and_season(directory: str, season: int) -> list[str]:
-        return
+    def get_csv_files_from_directory_and_season(directory: str, seasons: list[int]) -> list[str]:
+        # TODO use get_csv_files_from_directory or write a similar implementation where we use the _get_year_and_months_of_season to know which IDs we want
+        
+        csv_file_list = []
+        for season in seasons:
+            year_and_months_of_season: list[tuple[int, int]] = Utils._get_year_and_months_of_season(season=season)
+            
+            for year, month in year_and_months_of_season:
+                csv_file_list.append(
+                    Utils.get_csv_files_from_directory_containing_substring(str(year) + Utils._convert_to_month_number_as_str(month=month)))
+
+        return csv_file_list
+    
+    @staticmethod
+    def get_csv_files_from_directory_and_season_and_team(directory: str, seasons: list[int], team: str) -> list[str]:
+        csv_files_from_season = Utils.get_csv_files_from_directory_and_season(directory, seasons)
+        
+        return [csv_file for csv_file in csv_files_from_season if team in csv_file]
 
     @staticmethod
-    def _get_year_and_months_of_season(season: int) -> list[tuple[str, str]]:
+    def _get_year_and_months_of_season(season: int) -> list[tuple[int, int]]:
+        """
+            Contains data in a list with tuples that are the different months and years
+            
+            e.g. [(2025, 10), (2025, 11), (2025, 12), (2026, 1)] 
+        """
         months_of_season = Utils.choose_season_months(str(season))
 
         month_numbers_and_years = []
@@ -78,10 +101,21 @@ class Utils:
                 current_months_season += 1
 
             month_numbers_and_years.append(
-                (str(current_months_season), month_number))
+                (int(current_months_season), int(month_number)))
 
         return month_numbers_and_years
 
     @staticmethod
     def _convert_month_name_to_month_number(month: str) -> str:
         return MONTH_NAME_TO_NUMBER[month.upper()]
+
+    @staticmethod
+    def _convert_to_month_number_as_str(month: int) -> str:
+        return f"0{month}" if month < 10 else str(month)
+
+    @staticmethod
+    def to_list(val: Union[T, list[T]]) -> list[T]:
+        
+        if isinstance(val, list):
+            return list(val)
+        return [val]
