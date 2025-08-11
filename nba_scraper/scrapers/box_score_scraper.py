@@ -53,8 +53,8 @@ class BoxScoreScraper:
             CommonScarper.save_to_csv(
                 four_factors_df, CURRENT_DATA_FOLDER + "four_factors/" + game_id + ".csv")
 
-            AWAY_TEAM = line_score_df.iloc[0, 0]
-            HOME_TEAM = line_score_df.iloc[1, 0]
+            AWAY_TEAM = str(line_score_df.iloc[0, 0])
+            HOME_TEAM = str(line_score_df.iloc[1, 0])
 
             total_box_score_away = self._parse_box_score_stats(
                 soup, "div_box-" + AWAY_TEAM + "-game-basic")
