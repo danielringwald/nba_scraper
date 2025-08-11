@@ -173,4 +173,5 @@ def extract_data_from_csv_file(csv_file: str, directory: str) -> pd.DataFrame:
 
 
 def fetch_column_over_games(data: xr.DataArray, column: str):
+    
     pass
