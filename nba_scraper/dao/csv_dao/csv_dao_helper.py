@@ -1,7 +1,7 @@
 import functools
 from typing import Union
-from utils import Utils
-from configuration.box_score import TOTAL_BOX_SCORES_PATH
+from nba_scraper.utils import Utils
+from ...configuration.box_score import TOTAL_BOX_SCORES_PATH
 
 class CSVDAOHelper:
     

@@ -67,21 +67,19 @@ class Utils:
     @staticmethod
     def get_csv_files_from_directory_and_season(directory: str, seasons: list[int]) -> list[str]:
         # TODO use get_csv_files_from_directory or write a similar implementation where we use the _get_year_and_months_of_season to know which IDs we want
-        
+        seasons = Utils.to_list(seasons)
         csv_file_list = []
         for season in seasons:
             year_and_months_of_season: list[tuple[int, int]] = Utils._get_year_and_months_of_season(season=season)
-            
             for year, month in year_and_months_of_season:
-                csv_file_list.append(
-                    Utils.get_csv_files_from_directory_containing_substring(str(year) + Utils._convert_to_month_number_as_str(month=month)))
+                csv_file_list = csv_file_list + \
+                    Utils.get_csv_files_from_directory_containing_substring(str(year) + Utils._convert_to_month_number_as_str(month=month), directory)
 
         return csv_file_list
     
     @staticmethod
     def get_csv_files_from_directory_and_season_and_team(directory: str, seasons: list[int], team: str) -> list[str]:
         csv_files_from_season = Utils.get_csv_files_from_directory_and_season(directory, seasons)
-        
         return [csv_file for csv_file in csv_files_from_season if team in csv_file]
 
     @staticmethod
@@ -119,3 +117,7 @@ class Utils:
         if isinstance(val, list):
             return list(val)
         return [val]
+    
+    @staticmethod
+    def extract_data_from_csv_file(csv_file: str, directory: str) -> pd.DataFrame:
+        return pd.read_csv(directory + csv_file)

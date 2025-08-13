@@ -71,6 +71,13 @@ class TestCSVBoxScoreDAO(unittest.TestCase):
         self.assertEqual(game_box_score.get_player_row("Jerome Robinson"), BoxScoreRow(
             False, "Jerome Robinson", "Did Not Play", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
 
+    def test_get_by_team_and_season(self):
+
+        # When fetching games for team and season
+        box_score_games: list[GameBoxScore] = self.csv_box_score_dao.get_by_team_and_season("ATL", 2024)
+        
+        # Then assert not empty
+        self.assertTrue(len(box_score_games) > 0)
 
 if __name__ == "__main__":
     unittest.main()

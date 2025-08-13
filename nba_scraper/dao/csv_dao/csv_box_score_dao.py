@@ -1,9 +1,10 @@
 from .csv_common_dao import CSVCommonDAO
 import pandas as pd
-from utils import Utils
+from nba_scraper.utils import Utils
 from typing import Union, List
 from nba_scraper.models.game_box_score import GameBoxScore
 from .csv_dao_helper import CSVDAOHelper
+from ...mappers.box_score_mapper import BoxScoreMapper
 
 class CSVBoxScoreDAO(CSVCommonDAO):
 
@@ -26,6 +27,12 @@ class CSVBoxScoreDAO(CSVCommonDAO):
         """
         seasons = Utils.to_list(season)
         
-        Utils.get_csv_files_from_directory_and_season()
+        game_ids = []
+        for season in seasons:
+            game_ids = game_ids + CSVDAOHelper.get_box_score_ids_by_team_and_season(team, season)
         
-        return [GameBoxScore()]
+        game_box_scores = []
+        for game_id in game_ids:
+            game_box_scores.append(BoxScoreMapper.map_df_to_box_score_game(self.get_by_id(game_id)))
+        
+        return game_box_scores
