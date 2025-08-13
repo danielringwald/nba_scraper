@@ -5,12 +5,14 @@ from typing import Union, List
 from nba_scraper.models.game_box_score import GameBoxScore
 from .csv_dao_helper import CSVDAOHelper
 from ...mappers.box_score_mapper import BoxScoreMapper
+import functools
 
 class CSVBoxScoreDAO(CSVCommonDAO):
 
     def __init__(self, directory: str):
         super().__init__(directory)
         
+    
     def get_by_id(self, id: str) -> pd.DataFrame:
         """
             Return the game box score by ID where ID is on the form YYYYMMDD0<TEAM INITIALS>_<@ TEAM INITIALS>

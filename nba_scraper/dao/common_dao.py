@@ -5,5 +5,5 @@ class CommonDAO(ABC):
 
     @abstractmethod
     def get_by_id(self, id: str) -> Any:
-        pass
+        raise NotImplementedError
     
