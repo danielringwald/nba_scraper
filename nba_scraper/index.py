@@ -1,17 +1,19 @@
 import dash
-from dash import dcc, html, dash_table
-from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
-from .data_collector import get_nba_data_by_year_and_directory, get_total_results_by_team, TEAM, get_player_stats, get_top_player_stats, get_box_score_for_game
-from .utils import Utils
-import nba_scraper.configuration.schedule_and_results as sar
-import nba_scraper.configuration.player_stats as ps
-from .configuration.global_config import NBA_TEAMS, YEARS
-from .pages.teams import TeamPage
-from .pages.players import PlayerPage
-from .pages.box_scores import BoxScorePage
 import plotly.express as px
-
+from dash import dash_table, dcc, html
+from dash.dependencies import Input, Output
+import nba_scraper.configuration.player_stats as ps
+import nba_scraper.configuration.schedule_and_results as sar
+from nba_scraper.configuration.global_config import NBA_TEAMS, YEARS
+from nba_scraper.data_collector import (TEAM, get_box_score_for_game,
+                                        get_nba_data_by_year_and_directory,
+                                        get_player_stats, get_top_player_stats,
+                                        get_total_results_by_team)
+from nba_scraper.pages.box_scores import BoxScorePage
+from nba_scraper.pages.players import PlayerPage
+from nba_scraper.pages.teams import TeamPage
+from nba_scraper.utils import Utils
 
 SEASON = max(YEARS)
 
@@ -104,7 +106,7 @@ def update_team_result_table(teams: list, season=SEASON):
     Output("season-store", "data"),
     [Input('season-dropdown', 'value')]
 )
-def update_team_result_table(selected_season):
+def update_team_result_table_store(selected_season):
     if selected_season is None:
         return
 
@@ -129,7 +131,7 @@ def data_graph(team_name):
     Output('player-stats-container', 'children'),
     [Input('player-dropdown', 'value')]
 )
-def update_home_team_results_table(player_name):
+def update_player_results_table(player_name):
     if player_name is None:
         return "No player selected"
     df = get_player_stats(player_name, ps.DATA_DIRECTORY_PATH)
