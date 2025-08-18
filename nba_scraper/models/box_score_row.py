@@ -1,10 +1,12 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
+from enum import Enum
+
 
 @dataclass(slots=True)
 class BoxScoreRow:
-    
+
     starter: bool
-    
+
     PLAYER_NAME: str
     MP: str
     FG: int
@@ -27,3 +29,9 @@ class BoxScoreRow:
     PTS: int
     GAME_SCORE: float
     PLUS_MINUS: int
+
+
+BoxScoreRow.Fields = Enum(
+    "Fields",
+    {f.name: f.name for f in fields(BoxScoreRow)}
+)

@@ -26,19 +26,14 @@ class TestCSVBoxScoreDAO(unittest.TestCase):
     """
 
     def setUp(self):
-        self.box_score_mapper = bsm.BoxScoreMapper()
+        pass
 
     def test_get_box_score_model_by_id(self):
 
         # when fetching from db
-        game_stats = bsd.CSVBoxScoreDAO.get_by_id("201910220LAC_LAC")
-
-        # and when mapping to GameBoxScore
-        game_box_score: GameBoxScore = self.box_score_mapper.map_df_to_box_score_game(
-            game_stats)
+        game_box_score = bsd.CSVBoxScoreDAO.get_by_id("201910220LAC_LAC")
 
         # Assert type is correct
-        self.assertEqual(type(game_stats), pd.DataFrame)
         self.assertEqual(type(game_box_score), GameBoxScore)
 
         # Assert content is correct
@@ -77,6 +72,24 @@ class TestCSVBoxScoreDAO(unittest.TestCase):
 
         # Then assert not empty
         self.assertTrue(len(box_score_games) > 0)
+        self.assertTrue(
+            all(isinstance(game, GameBoxScore) for game in box_score_games))
+
+    def test_get_opposite_game(self):
+
+        # When fetching the opposite game of the home team
+        game_box_score = bsd.CSVBoxScoreDAO.get_by_id("201910220LAC_LAC")
+        opposite_game = bsd.CSVBoxScoreDAO.get_opposite_game(game_box_score)
+
+        # Then assert the opposite game is correct
+        self.assertEqual(opposite_game.id, "201910220LAC_LAL")
+
+        # When fetching the opposite game of the away team
+        game_box_score = bsd.CSVBoxScoreDAO.get_by_id("201910220LAC_LAL")
+        opposite_game = bsd.CSVBoxScoreDAO.get_opposite_game(game_box_score)
+
+        # Then assert the opposite game is correct
+        self.assertEqual(opposite_game.id, "201910220LAC_LAC")
 
 
 if __name__ == "__main__":

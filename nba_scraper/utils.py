@@ -1,11 +1,14 @@
 import os
-import pandas as pd
+import functools
+import logging
 from typing import Union, Sequence, TypeVar
+import pandas as pd
 from nba_scraper.configuration.global_config import SEASON_MONTHS, CORONA_SEASON_MONTHS, MONTH_NAME_TO_NUMBER
 
 BOX_SCORE_DATA_FILE_TEMPLATE = "{}{}"
 
 T = TypeVar("T")
+
 
 class Utils:
 
@@ -17,17 +20,20 @@ class Utils:
         return csv_files
 
     @staticmethod
+    @functools.lru_cache(maxsize=1000)
     def get_csv_files_from_directory_containing_substring(substring: str, directory=".") -> list[str]:
         """Returns a list of all .csv files in the specified directory that contain {substring}."""
 
         try:
             directory_file_list = os.listdir(directory)
-        except FileNotFoundError:
-            print(f"Directory {directory} not found.")
-            raise FileNotFoundError(f"Directory {directory} not found.")
+        except FileNotFoundError as exc:
+            logging.error("Directory %s not found.", directory)
+            raise FileNotFoundError(
+                f"Directory {directory} not found.") from exc
 
         csv_files = [file for file in directory_file_list if Utils._has_file_ending_and_contains_substring(
             ".csv", substring, file)]
+
         return csv_files
 
     @staticmethod
@@ -70,24 +76,34 @@ class Utils:
         seasons = Utils.to_list(seasons)
         csv_file_list = []
         for season in seasons:
-            year_and_months_of_season: list[tuple[int, int]] = Utils._get_year_and_months_of_season(season=season)
+            year_and_months_of_season: list[tuple[int, int]] = Utils._get_year_and_months_of_season(
+                season=season)
             for year, month in year_and_months_of_season:
                 csv_file_list = csv_file_list + \
-                    Utils.get_csv_files_from_directory_containing_substring(str(year) + Utils._convert_to_month_number_as_str(month=month), directory)
+                    Utils.get_csv_files_from_directory_containing_substring(
+                        str(year) + Utils._convert_to_month_number_as_str(month=month), directory)
 
         return csv_file_list
-    
+
     @staticmethod
     def get_csv_files_from_directory_and_season_and_team(directory: str, seasons: list[int], team: str) -> list[str]:
-        csv_files_from_season = Utils.get_csv_files_from_directory_and_season(directory, seasons)
-        return [csv_file for csv_file in csv_files_from_season if team in csv_file]
+        csv_files_from_season = Utils.get_csv_files_from_directory_and_season(
+            directory, seasons)
+
+        home_game_prefixes = [
+            csv_file.split("_")[0] for csv_file in csv_files_from_season if team + "_" + team in csv_file]
+        away_game_prefixes = [
+            csv_file.split("_")[0] for csv_file in csv_files_from_season
+            if team in csv_file and not (team + "_") in csv_file]
+
+        return [csv_file for csv_file in csv_files_from_season if csv_file[:12] in (home_game_prefixes + away_game_prefixes)]
 
     @staticmethod
     def _get_year_and_months_of_season(season: int) -> list[tuple[int, int]]:
         """
             Contains data in a list with tuples that are the different months and years
-            
-            e.g. [(2025, 10), (2025, 11), (2025, 12), (2026, 1)] 
+
+            e.g. [(2025, 10), (2025, 11), (2025, 12), (2026, 1)]
         """
         months_of_season = Utils.choose_season_months(str(season))
 
@@ -113,11 +129,35 @@ class Utils:
 
     @staticmethod
     def to_list(val: Union[T, list[T]]) -> list[T]:
-        
+
         if isinstance(val, list):
             return list(val)
         return [val]
-    
+
     @staticmethod
     def extract_data_from_csv_file(csv_file: str, directory: str) -> pd.DataFrame:
         return pd.read_csv(directory + csv_file)
+
+    @staticmethod
+    def get_game_id_prefix(box_score_id: str) -> str:
+        """
+            Extracts the prefix from a box score ID.
+            The prefix is the first 12 characters of the ID.
+        """
+        return box_score_id[:12]
+
+    @staticmethod
+    def get_home_team(box_score_id: str) -> str:
+        """
+            Extracts the home team initials from a box score ID.
+            The home team initials are the characters at positions 9 to 12.
+        """
+        return box_score_id[9:12]
+
+    @staticmethod
+    def get_stat_team(box_score_id: str) -> str:
+        """
+            Extracts the suffix from a box score ID.
+            The suffix is the last 3 characters of the ID.
+        """
+        return box_score_id[-3:]

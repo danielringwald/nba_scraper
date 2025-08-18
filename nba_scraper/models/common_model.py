@@ -1,7 +1,8 @@
 from dataclasses import dataclass
+from abc import ABC
+
 
 @dataclass
-class CommonModel:
-    
-    def __init__(self):
-        pass
+class CommonModel(ABC):
+
+    id: str
