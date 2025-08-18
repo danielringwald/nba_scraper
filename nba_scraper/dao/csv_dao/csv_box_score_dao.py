@@ -1,5 +1,7 @@
 import functools
 from typing import List, Union
+import logging
+import os
 import pandas as pd
 from nba_scraper.dao.csv_dao.csv_common_dao import CSVCommonDAO
 from nba_scraper.configuration.box_score import TOTAL_BOX_SCORES_PATH
@@ -23,24 +25,41 @@ class CSVBoxScoreDAO(CSVCommonDAO):
             Args:
                 season (int or list of int): A single season year or a list of season years.
                 team (str): The team name.
+
+            Returns:
+                pd.DataFrame: The box score data for the specified game.
         """
-        return pd.read_csv(cls.directory + item_id + ".csv")
+        path = os.path.join(cls.directory, item_id + ".csv")
+        return pd.read_csv(path)
 
     @classmethod
     def get_by_team_and_season(cls, team: str, season: Union[int, List[int]]) -> List[GameBoxScore]:
         """
             Returns all games by a team during a season
-        """
-        seasons = Utils.to_list(season)
 
-        game_ids = []
-        for season in seasons:
-            game_ids = game_ids + \
-                CSVDAOHelper.get_box_score_ids_by_team_and_season(team, season)
+            Args:
+                team (str): The team name.
+                season (int or list of int): A single season year or a list of season years.
+
+            Returns: 
+                List[GameBoxScore]: A list of GameBoxScore objects for the specified team and season.
+        """
+        season_years = Utils.to_list(season)
+
+        game_ids = [
+            game_id
+            for season_year in season_years
+            for game_id in CSVDAOHelper.get_box_score_ids_by_team_and_season(team, season_year)
+        ]
 
         game_box_scores = []
         for game_id in game_ids:
-            game_box_scores.append(
-                BoxScoreMapper.map_df_to_box_score_game(cls.get_by_id(game_id)))
+            try:
+                game_box_scores.append(
+                    BoxScoreMapper.map_df_to_box_score_game(cls.get_by_id(game_id)))
+            except FileNotFoundError:
+                logging.warning(
+                    "Box score file not found for game ID: %s", game_id)
+                continue
 
         return game_box_scores

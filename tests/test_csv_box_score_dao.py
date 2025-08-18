@@ -1,6 +1,5 @@
 import unittest
 import pandas as pd
-from nba_scraper.configuration.box_score import TOTAL_BOX_SCORES_PATH
 import nba_scraper.dao.csv_dao.csv_box_score_dao as bsd
 import nba_scraper.mappers.box_score_mapper as bsm
 from nba_scraper.models.game_box_score import GameBoxScore
@@ -27,13 +26,12 @@ class TestCSVBoxScoreDAO(unittest.TestCase):
     """
 
     def setUp(self):
-        self.csv_box_score_dao = bsd.CSVBoxScoreDAO(TOTAL_BOX_SCORES_PATH)
         self.box_score_mapper = bsm.BoxScoreMapper()
 
     def test_get_box_score_model_by_id(self):
 
         # when fetching from db
-        game_stats = self.csv_box_score_dao.get_by_id("/201910220LAC_LAC")
+        game_stats = bsd.CSVBoxScoreDAO.get_by_id("201910220LAC_LAC")
 
         # and when mapping to GameBoxScore
         game_box_score: GameBoxScore = self.box_score_mapper.map_df_to_box_score_game(
@@ -74,10 +72,12 @@ class TestCSVBoxScoreDAO(unittest.TestCase):
     def test_get_by_team_and_season(self):
 
         # When fetching games for team and season
-        box_score_games: list[GameBoxScore] = self.csv_box_score_dao.get_by_team_and_season("ATL", 2024)
-        
+        box_score_games: list[GameBoxScore] = bsd.CSVBoxScoreDAO.get_by_team_and_season(
+            "ATL", 2024)
+
         # Then assert not empty
         self.assertTrue(len(box_score_games) > 0)
+
 
 if __name__ == "__main__":
     unittest.main()
