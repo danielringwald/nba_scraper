@@ -3,4 +3,4 @@ import os
 
 if __name__ == "__main__":
     print(os.getcwd())
-    app.run(debug=False)
+    app.run(debug=True)

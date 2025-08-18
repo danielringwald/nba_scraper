@@ -1,10 +1,10 @@
 import pandas as pd
-from .utils import Utils
-from .header_creator import HeaderCreator
+from nba_scraper.utils import Utils
+from nba_scraper.header_creator import HeaderCreator
 import nba_scraper.configuration.schedule_and_results as sar
 import nba_scraper.configuration.player_stats as ps
 import nba_scraper.configuration.box_score as bs
-from .configuration.global_config import DATA_FOLDER, ACTIVE_PLAYERS_FILE, ACTIVE_PLAYERS_COLUMN_NAMES
+from nba_scraper.configuration.global_config import DATA_FOLDER, ACTIVE_PLAYERS_FILE, ACTIVE_PLAYERS_COLUMN_NAMES
 import functools
 import xarray as xr
 
@@ -173,5 +173,5 @@ def extract_data_from_csv_file(csv_file: str, directory: str) -> pd.DataFrame:
 
 
 def fetch_column_over_games(data: xr.DataArray, column: str):
-    
+
     pass

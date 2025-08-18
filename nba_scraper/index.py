@@ -1,5 +1,5 @@
 import dash
-from dash import dcc, html
+from dash import dcc, html, dash_table
 from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
 from .data_collector import get_nba_data_by_year_and_directory, get_total_results_by_team, TEAM, get_player_stats, get_top_player_stats, get_box_score_for_game
@@ -58,7 +58,13 @@ def update_home_team_results_table(team, season=SEASON):
                    ).sort_values(by=sar.DATE)
 
     # Create a Dash DataTable
-    return dbc.Table.from_dataframe(filtered_df, striped=True, bordered=True, hover=True)
+    return dash_table.DataTable(
+        data=filtered_df.to_dict('records'),
+        columns=[{"name": i, "id": i} for i in filtered_df.columns],
+        style_table={'overflowX': 'auto'},
+        style_cell={'textAlign': 'left'},
+        page_size=50,
+    )
 
 
 @app.callback(
@@ -85,7 +91,13 @@ def update_team_result_table(teams: list, season=SEASON):
             converted_teams_list)]
 
     # Create a Dash DataTable
-    return dbc.Table.from_dataframe(filtered_df, striped=True, bordered=True, hover=True)
+    return dash_table.DataTable(
+        data=filtered_df.to_dict('records'),
+        columns=[{"name": i, "id": i} for i in filtered_df.columns],
+        style_table={'overflowX': 'auto'},
+        style_cell={'textAlign': 'left'},
+        page_size=50,
+    )
 
 
 @app.callback(
@@ -123,7 +135,13 @@ def update_home_team_results_table(player_name):
     df = get_player_stats(player_name, ps.DATA_DIRECTORY_PATH)
 
     # Create a Dash DataTable
-    return dbc.Table.from_dataframe(df, striped=True, bordered=True, hover=True)
+    return dash_table.DataTable(
+        data=df.to_dict('records'),
+        columns=[{"name": i, "id": i} for i in df.columns],
+        style_table={'overflowX': 'auto'},
+        style_cell={'textAlign': 'left'},
+        page_size=50,
+    )
 
 
 @app.callback(
@@ -136,8 +154,13 @@ def top_player_stats(_):
     filtered_df = df[["Player", "TRB", "PTS", "Season", "Team"]]
 
     # Create a Dash DataTable
-    return dbc.Table.from_dataframe(filtered_df, striped=True, bordered=True, hover=True)
-
+    return dash_table.DataTable(
+        data=filtered_df.to_dict('records'),
+        columns=[{"name": i, "id": i} for i in filtered_df.columns],
+        style_table={'overflowX': 'auto'},
+        style_cell={'textAlign': 'left'},
+        page_size=50,
+    )
 
 # BOX SCORE DASHBOARD
 
@@ -149,4 +172,10 @@ def top_player_stats(_):
 def fetch_box_score_game(game: str):
     df = get_box_score_for_game(game)
 
-    return dbc.Table.from_dataframe(df, striped=True, bordered=True, hover=True)
+    return dash_table.DataTable(
+        data=df.to_dict('records'),
+        columns=[{"name": i, "id": i} for i in df.columns],
+        style_table={'overflowX': 'auto'},
+        style_cell={'textAlign': 'left'},
+        page_size=50,
+    )
