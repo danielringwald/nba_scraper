@@ -33,7 +33,7 @@ class CSVBoxScoreDAO(CSVCommonDAO):
         return BoxScoreMapper.map_df_to_box_score_game(item_id, pd.read_csv(path))
 
     @classmethod
-    def get_by_team_and_season(cls, team: str, season: Union[int, list[int]]) -> list[GameBoxScore]:
+    def get_by_team_and_season(cls, team: str, season: Union[int, list[int], str]) -> list[GameBoxScore]:
         """
             Returns all games by a team during a season
 

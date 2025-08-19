@@ -1,6 +1,5 @@
 from collections import defaultdict
 from typing import Union
-import matplotlib.pyplot as plt
 import pandas as pd
 from nba_scraper.dao.csv_dao.csv_box_score_dao import CSVBoxScoreDAO
 from nba_scraper.models.game_box_score import GameBoxScore
@@ -13,7 +12,7 @@ class Analyzer:
 
     def columns_against_wins(self,
                              team: str,
-                             season: str,
+                             season: Union[int, list[int], str],
                              column_enum: Union[BoxScoreRow.Fields, list[BoxScoreRow.Fields], str]) -> pd.DataFrame:
         """
             Count the number of rebounds and see how many wins

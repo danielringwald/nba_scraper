@@ -1,5 +1,6 @@
 import dash_bootstrap_components as dbc
 from dash import dcc, html
+import logging
 from nba_scraper.configuration.global_config import NBA_TEAMS, YEARS
 from nba_scraper.pages.page import Page
 from nba_scraper.analysis.analyzer import Analyzer
@@ -60,4 +61,10 @@ class StatsPage(Page):
 
     @staticmethod
     def get_analyzer_data(team, season, stat):
+        """
+            Get the data for the selected team, season, and stat.
+            This method is used in the Dash callback to update the stats table.
+        """
+        logging.info(
+            "Fetching data for team: %s, season: %s, stat: %s", team, season, stat)
         return StatsPage.analyzer.columns_against_wins(team, season, stat)

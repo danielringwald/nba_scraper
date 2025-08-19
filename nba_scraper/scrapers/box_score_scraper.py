@@ -1,10 +1,11 @@
 from bs4 import BeautifulSoup, Comment, Tag
 import pandas as pd
-from ..configuration.global_config import SEASON_MONTHS, YEARS, CORONA_SEASON_MONTHS, MONTH_NAME_TO_NUMBER
-from ..configuration.box_score import DIRECTORY_PATH, BOX_SCORE_YEARS_PARSED
-from .common_scraper import CommonScarper
 import os
 import time
+from nba_scraper.configuration.global_config import SEASON_MONTHS, YEARS, CORONA_SEASON_MONTHS
+from nba_scraper.configuration.box_score import DIRECTORY_PATH, BOX_SCORE_YEARS_PARSED
+from nba_scraper.scrapers.common_scraper import CommonScarper
+from nba_scraper.utils import Utils
 
 CURRENT_DATA_FOLDER = DIRECTORY_PATH
 
@@ -138,15 +139,6 @@ class BoxScoreScraper:
         return df
 
 
-def _choose_season_months(year):
-    """
-        Function to choose which months to scrape. This is because of corona season where the season was irregular.
-    """
-    if year == "2020" or year == "2021":
-        return CORONA_SEASON_MONTHS[year]
-    return SEASON_MONTHS
-
-
 if __name__ == "__main__":
     # Example usage
     base_url = "https://www.basketball-reference.com"
@@ -154,10 +146,8 @@ if __name__ == "__main__":
     scraper = BoxScoreScraper(base_url)
 
     for year in [y for y in YEARS if y not in BOX_SCORE_YEARS_PARSED]:
-        for month in _choose_season_months(year):
+        for month in Utils.choose_season_months(year):
             endpoint = "leagues/NBA_" + year + "_games-" + month + ".html"
-
-            season_months = _choose_season_months(year)
 
             CommonScarper.scrape_and_save_data(scraper, endpoint, None, False)
 

@@ -48,7 +48,6 @@ def _get_winner(away_team, away_points, home_team, home_points):
 
 
 def _get_winner_of_games(match_results_df: pd.DataFrame):
-    global count_wins
     results = pd.DataFrame()
 
     results[[sar.AWAY_TEAM, sar.AWAY_TEAM_POINTS, sar.HOME_TEAM,
@@ -170,8 +169,3 @@ def extract_box_score_data_from_multiple_csv_files(csv_files: list[str], directo
 
 def extract_data_from_csv_file(csv_file: str, directory: str) -> pd.DataFrame:
     return pd.read_csv(directory + csv_file)
-
-
-def fetch_column_over_games(data: xr.DataArray, column: str):
-
-    pass
