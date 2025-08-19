@@ -1,7 +1,6 @@
 import pandas as pd
-from typing import List
-from ..models.game_box_score import GameBoxScore
-from ..models.box_score_row import BoxScoreRow
+from nba_scraper.models.game_box_score import GameBoxScore
+from nba_scraper.models.box_score_row import BoxScoreRow
 
 
 class BoxScoreMapper():
@@ -23,11 +22,13 @@ class BoxScoreMapper():
             except (ValueError, TypeError):
                 return float(0)
 
-        player_scores: List[BoxScoreRow] = []
+        player_scores: list[BoxScoreRow] = []
 
         for idx, (_, row) in enumerate(df.iterrows()):
             # Map each row to BoxScoreRow
             player_score = BoxScoreRow(
+                IS_STARTER=(idx < 5),
+
                 PLAYER_NAME=row.get('Starters') or row.get(
                     'PLAYER_NAME') or "Unknown",
                 MP=str(row.get('MP', '0')),
@@ -54,9 +55,7 @@ class BoxScoreMapper():
                 PTS=to_int(row.get('PTS')),
                 GAME_SCORE=to_float(row.get('GmSc')) if pd.notnull(
                     row.get('GmSc')) else 0,
-                PLUS_MINUS=to_int(row.get('+/-')),
-
-                starter=(idx < 5)
+                PLUS_MINUS=to_int(row.get('+/-'))
             )
             player_scores.append(player_score)
 

@@ -5,17 +5,17 @@ from enum import Enum
 @dataclass(slots=True)
 class BoxScoreRow:
 
-    starter: bool
+    IS_STARTER: bool
 
     PLAYER_NAME: str
     MP: str
-    FG: int
+    FG: int  # Number of Field Goals Made
     FGA: int
     FG_PERCENTAGE: float
     THREE_POINTERS_MADE: int
     THREE_POINTERS_ATTEMPTED: int
     THREE_POINTERS_PERCENTAGE: float
-    FT: int
+    FT: int  # Number of Free Throws Made
     FTA: int
     FT_PERCENTAGE: float
     ORB: int

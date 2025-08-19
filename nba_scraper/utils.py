@@ -161,3 +161,11 @@ class Utils:
             The suffix is the last 3 characters of the ID.
         """
         return box_score_id[-3:]
+
+    @staticmethod
+    def get_game_date(box_score_id: str) -> str:
+        """
+            Extracts the game date from a box score ID.
+            The date is the first 8 characters of the ID.
+        """
+        return box_score_id[:8]

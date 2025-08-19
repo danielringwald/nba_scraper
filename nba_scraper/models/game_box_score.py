@@ -3,9 +3,10 @@ from enum import Enum
 from typing import List, Optional
 from nba_scraper.models.common_model import CommonModel
 from nba_scraper.models.box_score_row import BoxScoreRow
+from nba_scraper.utils import Utils
 
 
-@dataclass(slots=True)
+@dataclass(kw_only=True, slots=True)
 class GameBoxScore(CommonModel):
 
     home_team: Optional[str]
@@ -35,3 +36,9 @@ class GameBoxScore(CommonModel):
             column_name = column_name.value
 
         return sum(getattr(row, column_name) for row in self.player_scores)
+
+    def get_date_of_game(self) -> str:
+        """
+            Returns the date of the game in YYYYMMDD format.
+        """
+        return Utils.get_game_date(self.id)

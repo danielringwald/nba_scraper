@@ -1,15 +1,20 @@
 from collections import defaultdict
+from typing import Union
 import matplotlib.pyplot as plt
 import pandas as pd
 from nba_scraper.dao.csv_dao.csv_box_score_dao import CSVBoxScoreDAO
 from nba_scraper.models.game_box_score import GameBoxScore
 from nba_scraper.models.box_score_row import BoxScoreRow
 from nba_scraper.utils import Utils
+from nba_scraper.configuration.global_config import NBA_TEAMS
 
 
 class Analyzer:
 
-    def rebounds_against_wins(self, team: str, season: str):
+    def columns_against_wins(self,
+                             team: str,
+                             season: str,
+                             column_enum: Union[BoxScoreRow.Fields, list[BoxScoreRow.Fields]]) -> pd.DataFrame:
         """
             Count the number of rebounds and see how many wins
         """
@@ -22,17 +27,22 @@ class Analyzer:
         home_team_wins = [self._is_home_team_winner(
             box_score_pair) for box_score_pair in game_pairs]
 
-        home_team_rebounds = [self._get_home_team(box_score_pair).get_sum_of_column(
-            BoxScoreRow.Fields.TRB) for box_score_pair in game_pairs]
-
-        away_team_rebounds = [self._get_away_team(box_score_pair).get_sum_of_column(
-            BoxScoreRow.Fields.TRB) for box_score_pair in game_pairs]
+        home_team_column, stat_team_column = self._sum_of_columns(
+            game_pairs, column_enum)
 
         return pd.DataFrame({
-            "Home Team Rebounds": home_team_rebounds,
-            "Away Team Rebounds": away_team_rebounds,
+            "home_team_column": home_team_column,
+            "stat_team_column": stat_team_column,
             "Home Team Wins": home_team_wins
         })
+
+    def _sum_of_columns(self, game_pairs: list[list[GameBoxScore]], column_enum: Union[BoxScoreRow.Fields, list[BoxScoreRow.Fields]]) -> tuple[list[int], list[int]]:
+        home_team_column = [self._get_home_team(box_score_pair).get_sum_of_column(
+            column_enum) for box_score_pair in game_pairs]
+        stat_team_column = [self._get_stat_team(box_score_pair).get_sum_of_column(
+            column_enum) for box_score_pair in game_pairs]
+
+        return home_team_column, stat_team_column
 
     def _get_game_pairs(self, box_scores: list[GameBoxScore]) -> list[list[GameBoxScore]]:
         """
@@ -49,42 +59,59 @@ class Analyzer:
             Check if the home team won
         """
         home_team_box_score = self._get_home_team(box_score_pair)
-        away_team_box_score = self._get_away_team(box_score_pair)
+        stat_team_box_score = self._get_stat_team(box_score_pair)
 
         return home_team_box_score.get_sum_of_column(
-            BoxScoreRow.Fields.PTS.value) > away_team_box_score.get_sum_of_column(BoxScoreRow.Fields.PTS.value)
+            BoxScoreRow.Fields.PTS.value) > stat_team_box_score.get_sum_of_column(BoxScoreRow.Fields.PTS.value)
 
     def _get_home_team(self, box_score_pair: list[GameBoxScore]) -> GameBoxScore:
         """
-            Extract the home team initials from the box score ID
+            Extract the home team initials from the box score IDs
         """
         home_team = Utils.get_home_team(box_score_pair[0].id)
         home_team_box_score = [
-            box_score for box_score in box_score_pair if Utils.get_stat_team(box_score.id) == home_team]
+            box_score
+            for box_score in box_score_pair
+            if Utils.get_stat_team(box_score.id) == home_team
+        ]
+
         return home_team_box_score[0]
 
-    def _get_away_team(self, box_score_pair: list[GameBoxScore]) -> GameBoxScore:
+    def _get_stat_team(self, box_score_pair: list[GameBoxScore]) -> GameBoxScore:
         """
-            Extract the away team initials from the box score ID
+            Extract the away team initials from the box score IDs
         """
         stat_team = Utils.get_stat_team(box_score_pair[0].id)
         home_team = Utils.get_home_team(box_score_pair[0].id)
-        away_team_box_score = [
-            box_score for box_score in box_score_pair if box_score.id[-7:] == home_team + "_" + stat_team]
-        return away_team_box_score[0]
+        stat_team_box_score = [
+            box_score
+            for box_score in box_score_pair
+            if box_score.id[-7:] == home_team + "_" + stat_team
+        ]
+
+        return stat_team_box_score[0]
 
 
 if __name__ == "__main__":
 
     analyzer = Analyzer()
 
-    out_rebound_win_list, out_rebound_loss_list, under_rebound_win_list, under_rebound_loss_list = [], [], [], []
-    for team in ["LAC", "LAL"]:
-        rebound_stats = analyzer.rebounds_against_wins(team, 2023)
+    out_rebound_win_percentage_list = []
+    out_rebound_loss_percentage_list = []
+    under_rebound_win_percentage_list = []
+    under_rebound_loss_percentage_list = []
+    for team_name in NBA_TEAMS:
+        rebound_stats = analyzer.columns_against_wins(
+            team_name, 2023, BoxScoreRow.Fields.TRB)
+
+        if (len(rebound_stats) == 0):
+            print(f"No data available for {team_name} in 2023 season.")
+            raise ValueError(
+                f"No data available for {team_name} in 2023 season.")
 
         rebound_stats["Rebound Diff"] = (
-            rebound_stats["Home Team Rebounds"] -
-            rebound_stats["Away Team Rebounds"]
+            rebound_stats["home_team_column"] -
+            rebound_stats["stat_team_column"]
         )
 
         # Define categories
@@ -96,15 +123,26 @@ if __name__ == "__main__":
         out_rebound_loss = ((out_rebound) & (~win)).sum()
         under_rebound_win = ((~out_rebound) & (win)).sum()
         under_rebound_loss = ((~out_rebound) & (~win)).sum()
+        total_games = len(rebound_stats)
 
-        out_rebound_win_list.append(out_rebound_win)
-        out_rebound_loss_list.append(out_rebound_loss)
-        under_rebound_win_list.append(under_rebound_win)
-        under_rebound_loss_list.append(under_rebound_loss)
+        out_rebound_win_percentage_list.append(out_rebound_win / total_games)
+        out_rebound_loss_percentage_list.append(out_rebound_loss / total_games)
+        under_rebound_win_percentage_list.append(
+            under_rebound_win / total_games)
+        under_rebound_loss_percentage_list.append(
+            under_rebound_loss / total_games)
 
-        # print(f"[{team}] Home team out-rebounded and won:", out_rebound_win)
-        # print(f"[{team}] Home team out-rebounded but lost:", out_rebound_loss)
-        # print(f"[{team}] Home team were out-rebounded and won:",
-        #       under_rebound_win)
-        # print(f"[{team}] Home team were out-rebounded and lost:",
-        #       under_rebound_loss)
+        print(f"[{team_name}] Home team out-rebounded and won: {out_rebound_win} ({out_rebound_win / total_games:.2%})")
+        print(f"[{team_name}] Home team out-rebounded but lost: {out_rebound_loss} ({out_rebound_loss / total_games:.2%})")
+        print(f"[{team_name}] Home team were out-rebounded and won: {under_rebound_win} ({under_rebound_win / total_games:.2%})")
+        print(f"[{team_name}] Home team were out-rebounded and lost: {under_rebound_loss} ({under_rebound_loss / total_games:.2%})")
+
+    print()
+    print("Out-rebound win percentage:", sum(out_rebound_win_percentage_list) /
+          len(out_rebound_win_percentage_list))
+    print("Out-rebound loss percentage:", sum(out_rebound_loss_percentage_list) /
+          len(out_rebound_loss_percentage_list))
+    print("Under-rebound win percentage:", sum(under_rebound_win_percentage_list) /
+          len(under_rebound_win_percentage_list))
+    print("Under-rebound loss percentage:", sum(under_rebound_loss_percentage_list) /
+          len(under_rebound_loss_percentage_list))
