@@ -1,19 +1,18 @@
 import dash_bootstrap_components as dbc
 from dash import dcc, html
-from ..configuration.global_config import NBA_TEAMS, YEARS
-from .page import Page
-
-SEASON = max(YEARS)
+from nba_scraper.configuration.global_config import NBA_TEAMS, YEARS
+from nba_scraper.pages.page import Page
 
 
 class TeamPage(Page):
 
+    @staticmethod
     def team_page_layout():
         return dbc.Container([
             Page.navigation_bar(),
             html.H1("NBA Games Dashboard"),
 
-            html.H2(f"Select season"),
+            html.H2("Select season"),
             # Dropdown menu for filtering by year
             html.Label("Select Season"),
             dcc.Dropdown(
@@ -23,12 +22,12 @@ class TeamPage(Page):
                     for season in YEARS
                 ],
                 # Default to the first team in alpabetical order
-                value=SEASON,
+                value=Page.selected_season,
                 clearable=False
             ),
             dcc.Store(id='season-store'),
 
-            html.H2(f"Home games result in the season {SEASON}"),
+            html.H2("Home games result in the season"),
             # Dropdown menu for filtering by year
             html.Label("Select Home Team"),
             dcc.Dropdown(
@@ -45,7 +44,7 @@ class TeamPage(Page):
             # Table to display games
             html.Div(id='home-team-results-container'),
 
-            html.H2("Total results for the season"),
+            html.H2("Total results for the season (including playoffs)"),
             # Dropdown menu for filtering by year
             html.Label("Select Team"),
             dcc.Dropdown(
@@ -61,12 +60,5 @@ class TeamPage(Page):
             # Table to display games
             html.Div(id='team-result-container'),
 
-            html.H2("This is a data graph"),
-
-            # Table for generic plotting
-            html.Div(id="div_data_graph", children=[]),
-
-            html.Br(),
-
-            dcc.Graph(id="data_graph", figure={})
+            html.H2("This is a data graph")
         ])

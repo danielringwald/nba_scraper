@@ -1,15 +1,15 @@
 import dash_bootstrap_components as dbc
 from dash import dcc, html
-from ..configuration.global_config import YEARS
-from .page import Page
-from ..data_collector import get_active_players
+from nba_scraper.configuration.global_config import YEARS
+from nba_scraper.pages.page import Page
+from nba_scraper.data_collector import get_active_players
 
-SEASON = max(YEARS)
 ACTIVE_PLAYERS = get_active_players()
 
 
 class PlayerPage(Page):
 
+    @staticmethod
     def player_layout():
         return dbc.Container([
             Page.navigation_bar(),
@@ -28,6 +28,6 @@ class PlayerPage(Page):
             ),
             html.Div(id='player-stats-container'),
 
-            html.H2(f"Top Player Stats"),
+            html.H2("Top Player Stats"),
             html.Div(id='top-player-stats-container'),
         ])

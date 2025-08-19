@@ -3,6 +3,8 @@ import dash_bootstrap_components as dbc
 import plotly.express as px
 from dash import dash_table, dcc, html
 from dash.dependencies import Input, Output
+import logging
+import traceback
 import nba_scraper.configuration.player_stats as ps
 import nba_scraper.configuration.schedule_and_results as sar
 from nba_scraper.configuration.global_config import NBA_TEAMS, YEARS
@@ -13,12 +15,15 @@ from nba_scraper.data_collector import (TEAM, get_box_score_for_game,
 from nba_scraper.pages.box_scores import BoxScorePage
 from nba_scraper.pages.players import PlayerPage
 from nba_scraper.pages.teams import TeamPage
+from nba_scraper.pages.stats import StatsPage
+from nba_scraper.pages.page import Page
 from nba_scraper.utils import Utils
 
 SEASON = max(YEARS)
 
 # Initialize Dash app
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+app = dash.Dash(__name__, external_stylesheets=[
+                dbc.themes.BOOTSTRAP], suppress_callback_exceptions=True)
 
 
 # Layout of the dashboard
@@ -37,8 +42,10 @@ def display_page(pathname):
         return PlayerPage.player_layout()
     elif pathname == '/boxscores':
         return BoxScorePage.box_score_page_layout()
-    else:
+    elif pathname == '/' or pathname == '/teams':
         return TeamPage.team_page_layout()
+    elif pathname == '/stats':
+        return StatsPage.stats_page_layout()
 
 
 # TEAMS DASHBOARD
@@ -110,8 +117,8 @@ def update_team_result_table_store(selected_season):
     if selected_season is None:
         return
 
-    SEASON = selected_season
-    return SEASON
+    Page.selected_season = selected_season
+    return selected_season
 
 
 @app.callback(
@@ -181,3 +188,29 @@ def fetch_box_score_game(game: str):
         style_cell={'textAlign': 'left'},
         page_size=50,
     )
+
+
+# STATS DASHBOARD
+
+@app.callback(
+    Output('stat-container', 'children'),
+    [Input('team-dropdown', 'value'),
+     Input('season-dropdown', 'value'),
+     Input('stat-dropdown', 'value')]
+)
+def analyze_column(team, season, stat):
+    if team is None or season is None or stat is None:
+        return "Please select a team, season, and stat."
+
+    try:
+        data = StatsPage.get_analyzer_data(team, season, stat)
+        return dash_table.DataTable(
+            data=data.to_dict('records'),
+            columns=[{"name": i, "id": i} for i in data.columns],
+            style_table={'overflowX': 'auto'},
+            style_cell={'textAlign': 'left'},
+            page_size=50,
+        )
+    except Exception as e:
+        logging.error(traceback.format_exc())
+        return f"Error fetching data: {e}"

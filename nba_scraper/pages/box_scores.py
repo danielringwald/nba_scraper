@@ -1,12 +1,13 @@
+import os
 import dash_bootstrap_components as dbc
 from dash import dcc, html
-from ..configuration.box_score import DIRECTORY_PATH
-from .page import Page
-import os
+from nba_scraper.configuration.box_score import DIRECTORY_PATH
+from nba_scraper.pages.page import Page
 
 
 class BoxScorePage(Page):
 
+    @staticmethod
     def box_score_page_layout():
         games = BoxScorePage.get_games()
 
@@ -14,7 +15,7 @@ class BoxScorePage(Page):
             Page.navigation_bar(),
             html.H1("Box Scores Dashboard"),
 
-            html.H2(f"Box Scores"),
+            html.H2("Box Scores"),
             html.Label("Select Game"),
             dcc.Dropdown(
                 id='box-score-dropdown',
@@ -29,11 +30,13 @@ class BoxScorePage(Page):
             html.Div(id='box-score-container'),
         ])
 
+    @staticmethod
     def get_games():
         all_games = os.listdir(DIRECTORY_PATH + "total_box_scores/")
 
         return [game for game in all_games if int(game[:8]) > 20241001]
 
+    @staticmethod
     def _format_game_name(game):
         game_name = ""
 

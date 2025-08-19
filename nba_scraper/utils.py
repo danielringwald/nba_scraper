@@ -132,6 +132,8 @@ class Utils:
 
         if isinstance(val, list):
             return list(val)
+        if isinstance(val, str):
+            return [int(val)]
         return [val]
 
     @staticmethod

@@ -14,7 +14,7 @@ class Analyzer:
     def columns_against_wins(self,
                              team: str,
                              season: str,
-                             column_enum: Union[BoxScoreRow.Fields, list[BoxScoreRow.Fields]]) -> pd.DataFrame:
+                             column_enum: Union[BoxScoreRow.Fields, list[BoxScoreRow.Fields], str]) -> pd.DataFrame:
         """
             Count the number of rebounds and see how many wins
         """
@@ -36,7 +36,9 @@ class Analyzer:
             "Home Team Wins": home_team_wins
         })
 
-    def _sum_of_columns(self, game_pairs: list[list[GameBoxScore]], column_enum: Union[BoxScoreRow.Fields, list[BoxScoreRow.Fields]]) -> tuple[list[int], list[int]]:
+    def _sum_of_columns(self,
+                        game_pairs: list[list[GameBoxScore]],
+                        column_enum: Union[BoxScoreRow.Fields, list[BoxScoreRow.Fields]]) -> tuple[list[int], list[int]]:
         home_team_column = [self._get_home_team(box_score_pair).get_sum_of_column(
             column_enum) for box_score_pair in game_pairs]
         stat_team_column = [self._get_stat_team(box_score_pair).get_sum_of_column(
