@@ -210,6 +210,8 @@ def analyze_column(team, season, stat):
             style_table={'overflowX': 'auto'},
             style_cell={'textAlign': 'left'},
             page_size=50,
+            sort_action='native',
+            sort_mode='multi',
         )
     except Exception as e:
         logging.error(traceback.format_exc())

@@ -29,19 +29,28 @@ class Analyzer:
         home_team_column, stat_team_column = self._sum_of_columns(
             game_pairs, column_enum)
 
+        home_team_game_id = [home_team[0] for home_team in home_team_column]
+        stat_team_game_id = [stat_team[0] for stat_team in stat_team_column]
+        home_team_column = [home_team[1] for home_team in home_team_column]
+        stat_team_column = [stat_team[1] for stat_team in stat_team_column]
+
         return pd.DataFrame({
-            "home_team_column": home_team_column,
-            "stat_team_column": stat_team_column,
+            "Home Team Game ID": home_team_game_id,
+            f"Home Team {column_enum}": home_team_column,
+            "Stat Team Game ID": stat_team_game_id,
+            f"Stat Team {column_enum}": stat_team_column,
+            f"{column_enum} Diff": [home - stat for home, stat in zip(home_team_column, stat_team_column)],
             "Home Team Wins": home_team_wins
         })
 
     def _sum_of_columns(self,
                         game_pairs: list[list[GameBoxScore]],
                         column_enum: Union[BoxScoreRow.Fields, list[BoxScoreRow.Fields]]) -> tuple[list[int], list[int]]:
-        home_team_column = [self._get_home_team(box_score_pair).get_sum_of_column(
-            column_enum) for box_score_pair in game_pairs]
-        stat_team_column = [self._get_stat_team(box_score_pair).get_sum_of_column(
-            column_enum) for box_score_pair in game_pairs]
+
+        home_team_column = [(Utils.get_game_id_prefix(box_score_pair[0].id), self._get_home_team(box_score_pair).get_sum_of_column(
+            column_enum)) for box_score_pair in game_pairs]
+        stat_team_column = [(Utils.get_game_id_prefix(box_score_pair[0].id), self._get_stat_team(box_score_pair).get_sum_of_column(
+            column_enum)) for box_score_pair in game_pairs]
 
         return home_team_column, stat_team_column
 
@@ -102,8 +111,10 @@ if __name__ == "__main__":
     under_rebound_win_percentage_list = []
     under_rebound_loss_percentage_list = []
     for team_name in NBA_TEAMS:
+        stat_column = BoxScoreRow.Fields.PTS.value
+
         rebound_stats = analyzer.columns_against_wins(
-            team_name, 2023, BoxScoreRow.Fields.TRB)
+            team_name, 2023, stat_column)
 
         if (len(rebound_stats) == 0):
             print(f"No data available for {team_name} in 2023 season.")
@@ -111,12 +122,12 @@ if __name__ == "__main__":
                 f"No data available for {team_name} in 2023 season.")
 
         rebound_stats["Rebound Diff"] = (
-            rebound_stats["home_team_column"] -
-            rebound_stats["stat_team_column"]
+            rebound_stats[f"Home Team {stat_column}"] -
+            rebound_stats[f"Stat Team{stat_column}"]
         )
 
         # Define categories
-        out_rebound = rebound_stats["Rebound Diff"] > 0
+        out_rebound = rebound_stats["Rebound Diff"] >= 0
         win = rebound_stats["Home Team Wins"]
 
         # Compute counts
