@@ -91,12 +91,16 @@ class Analyzer:
         """
             Extract the away team initials from the box score IDs
         """
-        stat_team = Utils.get_stat_team(box_score_pair[0].id)
         home_team = Utils.get_home_team(box_score_pair[0].id)
+        stat_team_1 = Utils.get_stat_team(box_score_pair[0].id)
+        stat_team_2 = Utils.get_stat_team(box_score_pair[1].id)
+
+        stat_team = stat_team_1 if stat_team_1 != home_team else stat_team_2
+
         stat_team_box_score = [
             box_score
             for box_score in box_score_pair
-            if box_score.id[-7:] == home_team + "_" + stat_team
+            if box_score.id[-7:] == home_team + "_" + stat_team and home_team != stat_team
         ]
 
         return stat_team_box_score[0]
@@ -110,7 +114,7 @@ if __name__ == "__main__":
     out_rebound_loss_percentage_list = []
     under_rebound_win_percentage_list = []
     under_rebound_loss_percentage_list = []
-    for team_name in NBA_TEAMS:
+    for team_name in ["LAC"]:
         stat_column = BoxScoreRow.Fields.PTS.value
 
         rebound_stats = analyzer.columns_against_wins(
@@ -123,7 +127,7 @@ if __name__ == "__main__":
 
         rebound_stats["Rebound Diff"] = (
             rebound_stats[f"Home Team {stat_column}"] -
-            rebound_stats[f"Stat Team{stat_column}"]
+            rebound_stats[f"Stat Team {stat_column}"]
         )
 
         # Define categories
