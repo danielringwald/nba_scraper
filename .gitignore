@@ -4,3 +4,4 @@ __pycache__
 nba_scraper_venv
 nba_scraper_env
 nba_scraper_env/*
+nba_scraper.db

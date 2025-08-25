@@ -121,4 +121,4 @@ class CSVBoxScoreDAO(CSVCommonDAO):
                 list[GameBoxScore]: A list of GameBoxScore objects for the specified date and home team.
         """
         game_ids = CSVDAOHelper.get_box_score_ids_by_season(date)
-        return [cls.get_by_id(game_id) for game_id in game_ids if game_id.startswith(f"{date}_{home_team}")]
+        return [cls.get_by_id(game_id) for game_id in game_ids if game_id.startswith(f"{date}0{home_team}")]
