@@ -72,7 +72,6 @@ class Utils:
 
     @staticmethod
     def get_csv_files_from_directory_and_season(directory: str, seasons: list[int]) -> list[str]:
-        # TODO use get_csv_files_from_directory or write a similar implementation where we use the _get_year_and_months_of_season to know which IDs we want
         seasons = Utils.to_list(seasons)
         csv_file_list = []
         for season in seasons:
