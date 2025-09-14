@@ -43,13 +43,8 @@ def save_box_score_to_database(con, file_name: str, table_name: str, create_tabl
         print("Table creation and data entry skipped.")
 
 
-def main(table_name: str, create_table: bool = False):
-    con = duckdb.connect(database='nba_scraper.db', read_only=False)
-
-#   game_id    │  Starters      │      MP      │   FG   │  FGA   │  FG%   │   3P   │  3PA   │  3P%   │   FT   │  FTA   │  FT%   │  ORB   │  DRB   │  TRB   │  AST   │  STL   │  BLK   │  TOV   │   PF   │  PTS   │  GmSc  │  +/-   │
-#   varchar    │   varchar      │   varchar    │ double │ double │ double │ double │ double │ double │ double │ double │ double │ double │ double │ double │ double │ double │ double │ double │ double │ double │ double │ double │
-    if create_table:
-        con.execute(f"""
+def perform_create_table(con, table_name: str):
+    con.execute(f"""
         CREATE TABLE IF NOT EXISTS {table_name} (
             game_id VARCHAR NOT NULL,
             player_name VARCHAR,
@@ -78,6 +73,15 @@ def main(table_name: str, create_table: bool = False):
         )
         """)
     print("Table created successfully")
+
+
+def main(table_name: str, create_table: bool = False):
+    con = duckdb.connect(database='nba_scraper.db', read_only=False)
+
+#   game_id    │  Starters      │      MP      │   FG   │  FGA   │  FG%   │   3P   │  3PA   │  3P%   │   FT   │  FTA   │  FT%   │  ORB   │  DRB   │  TRB   │  AST   │  STL   │  BLK   │  TOV   │   PF   │  PTS   │  GmSc  │  +/-   │
+#   varchar    │   varchar      │   varchar    │ double │ double │ double │ double │ double │ double │ double │ double │ double │ double │ double │ double │ double │ double │ double │ double │ double │ double │ double │ double │
+    if create_table:
+        perform_create_table(con, table_name)
 
     box_score_games = Utils.get_csv_files_from_directory(TOTAL_BOX_SCORES_PATH)
     print(box_score_games[:5])
