@@ -60,7 +60,8 @@ def update_home_team_results_table(team, season=SEASON):
     if team is None:
         return "No team selected"
 
-    df = get_nba_data_by_year_and_directory(season, sar.DIRECTORY_PATH)
+    df = get_nba_data_by_year_and_directory(
+        season, sar.SCHEDULE_AND_RESULTS_PATH)
 
     # Filter data based on the selected year
     filtered_df = (df[df[sar.HOME_TEAM] == NBA_TEAMS[team]]
@@ -84,7 +85,8 @@ def update_home_team_results_table(team, season=SEASON):
 def update_team_result_table(teams: list, season=SEASON):
 
     try:
-        df = get_nba_data_by_year_and_directory(season, sar.DIRECTORY_PATH)
+        df = get_nba_data_by_year_and_directory(
+            season, sar.SCHEDULE_AND_RESULTS_PATH)
     except Exception as e:
         print("Error fetching data from season {}, exception: {}".format(season, e))
         return "\nNO DATA WAS FETCHED"

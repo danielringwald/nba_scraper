@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup, Comment, Tag
 import pandas as pd
 import os
 import time
-from nba_scraper.configuration.global_config import SEASON_MONTHS, YEARS, CORONA_SEASON_MONTHS
+from nba_scraper.configuration.global_config import YEARS
 from nba_scraper.configuration.box_score import DIRECTORY_PATH, BOX_SCORE_YEARS_PARSED
 from nba_scraper.scrapers.common_scraper import CommonScarper
 from nba_scraper.utils import Utils

@@ -5,7 +5,6 @@ from nba_scraper.dao.csv_dao.csv_box_score_dao import CSVBoxScoreDAO
 from nba_scraper.models.game_box_score import GameBoxScore
 from nba_scraper.models.box_score_row import BoxScoreRow
 from nba_scraper.utils import Utils
-from nba_scraper.configuration.global_config import NBA_TEAMS
 
 
 class Analyzer:

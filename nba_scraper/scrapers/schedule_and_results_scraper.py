@@ -1,11 +1,9 @@
 from bs4 import BeautifulSoup
 import pandas as pd
 from ..configuration.global_config import SEASON_MONTHS, YEARS, CORONA_SEASON_MONTHS
-from ..configuration.schedule_and_results import DIRECTORY_PATH
+from ..configuration.schedule_and_results import SCHEDULE_AND_RESULTS_PATH
 from .common_scraper import CommonScarper
 from ..utils import Utils
-
-CURRENT_DATA_FOLDER = DIRECTORY_PATH
 
 
 class ScheduleAndResultsScraper:
@@ -18,7 +16,6 @@ class ScheduleAndResultsScraper:
 
         # Find the table (this example assumes the stats are in a table)
         table = soup.find("div", {"id": "div_schedule"})
-
         # Extract table headers
         headers = [th.text for th in table.find('thead').find_all('th')]
 
@@ -27,7 +24,8 @@ class ScheduleAndResultsScraper:
         rows = []
         for tr in table.find('tbody').find_all('th'):
             row = [a.text for a in tr.find_all('a')]
-            body_headers.append(row)
+            if not len(row) == 0:
+                body_headers.append(row)
         for i, tr in enumerate(table.find('tbody').find_all('tr')):
             row = [td.text for td in tr.find_all('td')]
             rows.append(row)
@@ -61,9 +59,9 @@ if __name__ == "__main__":
 
             endpoint = "leagues/NBA_" + year + "_games-" + month + ".html"
 
-            output_file = CURRENT_DATA_FOLDER + file_name
+            output_file = SCHEDULE_AND_RESULTS_PATH + file_name
 
-            if Utils.is_file_in_directory(file_name, CURRENT_DATA_FOLDER):
+            if Utils.is_file_in_directory(file_name, SCHEDULE_AND_RESULTS_PATH):
                 print(
                     "File {} already exists. Continuing...".format(file_name))
                 continue

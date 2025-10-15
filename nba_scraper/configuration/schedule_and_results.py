@@ -14,4 +14,4 @@ ARENA = "arena"
 NOTES = "notes"
 
 
-DIRECTORY_PATH = DATA_FOLDER + "schedule_and_results/"
+SCHEDULE_AND_RESULTS_PATH = DATA_FOLDER + "schedule_and_results/"

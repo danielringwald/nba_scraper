@@ -1,9 +1,14 @@
 import os
 import functools
 import logging
-from typing import Union, Sequence, TypeVar
+from typing import TypeVar
 import pandas as pd
-from nba_scraper.configuration.global_config import SEASON_MONTHS, CORONA_SEASON_MONTHS, MONTH_NAME_TO_NUMBER
+from nba_scraper.configuration.global_config import (
+    SEASON_MONTHS,
+    CORONA_SEASON_MONTHS,
+    MONTH_NAME_TO_NUMBER,
+    MONTH_NUMBER_TO_MONTH_NAME
+)
 
 BOX_SCORE_DATA_FILE_TEMPLATE = "{}{}"
 
@@ -71,7 +76,7 @@ class Utils:
         return SEASON_MONTHS
 
     @staticmethod
-    def get_csv_files_from_directory_and_season(directory: str, seasons: list[int]) -> list[str]:
+    def get_csv_files_from_directory_and_season(directory: str, seasons: list[int] | int) -> list[str]:
         seasons = Utils.to_list(seasons)
         csv_file_list = []
         for season in seasons:
@@ -96,6 +101,18 @@ class Utils:
             if team in csv_file and not (team + "_") in csv_file]
 
         return [csv_file for csv_file in csv_files_from_season if csv_file[:12] in (home_game_prefixes + away_game_prefixes)]
+
+    @staticmethod
+    def get_schedule_and_results_csv_for_single_season(directory: str, season: int) -> list[str]:
+        csv_files = []
+        year_and_months_of_season = Utils._get_year_and_months_of_season(
+            season)
+
+        for year, month in year_and_months_of_season:
+            csv_files = csv_files + Utils.get_csv_files_from_directory_containing_substring(
+                str(year) + "_" + MONTH_NUMBER_TO_MONTH_NAME[Utils._convert_to_month_number_as_str(month)].lower(), directory=directory)
+
+        return csv_files
 
     @staticmethod
     def _get_year_and_months_of_season(season: int) -> list[tuple[int, int]]:
@@ -127,10 +144,11 @@ class Utils:
         return f"0{month}" if month < 10 else str(month)
 
     @staticmethod
-    def to_list(val: Union[T, list[T]]) -> list[T]:
+    def to_list(val: T | list[T]) -> list[T]:
 
         if isinstance(val, list):
-            return list(val)
+            return val
+        # TODO Remove this weird parse from str to int, the function is generic so the output should be as well???
         if isinstance(val, str):
             return [int(val)]
         return [val]

@@ -24,6 +24,21 @@ MONTH_NAME_TO_NUMBER = {
     "DECEMBER": "12"
 }
 
+MONTH_NUMBER_TO_MONTH_NAME = {
+    "01": "JANUARY",
+    "02": "FEBRUARY",
+    "03": "MARCH",
+    "04": "APRIL",
+    "05": "MAY",
+    "06": "JUNE",
+    "07": "JULY",
+    "08": "AUGUST",
+    "09": "SEPTEMBER",
+    "10": "OCTOBER",
+    "11": "NOVEMBER",
+    "12": "DECEMBER"
+}
+
 YEARS = ["2025", "2024", "2023", "2022", "2021", "2020"]
 
 PLAYOFF_START = {
@@ -71,4 +86,37 @@ NBA_TEAMS = {
     "TOR":	"Toronto Raptors",
     "UTA":	"Utah Jazz",
     "WAS":	"Washington Wizards"
+}
+
+NBA_TEAM_FULL_NAME_TO_ABBRIV = {
+    "Atlanta Hawks": "ATL",
+    "Boston Celtics": "BOS",
+    "Brooklyn Nets": "BRK",
+    "Charlotte Hornets": "CHO",
+    "Chicago Bulls": "CHI",
+    "Cleveland Cavaliers": "CLE",
+    "Dallas Mavericks": "DAL",
+    "Denver Nuggets": "DEN",
+    "Detroit Pistons": "DET",
+    "Golden State Warriors": "GSW",
+    "Houston Rockets": "HOU",
+    "Indiana Pacers": "IND",
+    "Los Angeles Clippers": "LAC",
+    "Los Angeles Lakers": "LAL",
+    "Memphis Grizzlies": "MEM",
+    "Miami Heat": "MIA",
+    "Milwaukee Bucks": "MIL",
+    "Minnesota Timberwolves": "MIN",
+    "New Orleans Pelicans": "NOP",
+    "New York Knicks": "NYK",
+    "Oklahoma City Thunder": "OKC",
+    "Orlando Magic": "ORL",
+    "Philadelphia 76ers": "PHI",
+    "Phoenix Suns": "PHO",
+    "Portland Trail Blazers": "POR",
+    "Sacramento Kings": "SAC",
+    "San Antonio Spurs": "SAS",
+    "Toronto Raptors": "TOR",
+    "Utah Jazz": "UTA",
+    "Washington Wizards": "WAS"
 }

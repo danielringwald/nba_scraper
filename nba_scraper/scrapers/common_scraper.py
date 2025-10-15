@@ -1,25 +1,51 @@
-import requests
 import os
-import time
 import pandas as pd
 from collections.abc import Callable
+from playwright.sync_api import sync_playwright
+
+MAX_RETRIES = 2
 
 
 class CommonScarper:
 
     @staticmethod
     def fetch_page(endpoint):
-        """Fetches the HTML content of the page."""
-        url = f"https://www.basketball-reference.com/{endpoint}"
-        response = requests.get(url)
-        if response.status_code == 200:
-            return response.content
-        if response.status_code == 404:
-            print(f"Can't find URL {url}")
-        else:
+        """Fetches the HTML content of the page (Cloudflare-safe)."""
+
+        tries = 0
+        try:
+            if tries < MAX_RETRIES:
+                return CommonScarper.playwright_fetch_page(endpoint)
+            else:
+                print("Retried too many times. Stopping...")
+        except Exception as e:
+            tries += 1
             print(
-                f"Error: Unable to fetch data from {url}. Status {response.status_code}")
-            return None
+                f"Error fetching page {endpoint}. Retrying {tries} of {MAX_RETRIES}: {e}")
+            return CommonScarper.fetch_page(endpoint)
+
+    @staticmethod
+    def playwright_fetch_page(endpoint):
+        url = f"https://www.basketball-reference.com/{endpoint}"
+
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            context = browser.new_context(
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                           "AppleWebKit/537.36 (KHTML, like Gecko) "
+                           "Chrome/127.0.0.0 Safari/537.36",
+            )
+            page = context.new_page()
+            # Try to load and wait for the DOM (not full network)
+            try:
+                page.goto(url, wait_until="domcontentloaded", timeout=45000)
+            except Exception as e:
+                print(f"⚠️ Warning: initial load issue at {url}: {e}")
+            # Wait a bit for Cloudflare JS challenge to auto-bypass
+            page.wait_for_timeout(3100)
+            html = page.content()
+            browser.close()
+            return html
 
     @staticmethod
     def save_to_csv(df: pd.DataFrame, filename: str):
@@ -50,6 +76,3 @@ class CommonScarper:
     def scrape_and_save_data(scraper: Callable, endpoint, output_file, save=True):
         CommonScarper.scrape_nba_stats(
             endpoint, output_file, parse_statistics_method=scraper.parse_statistics, save=save)
-
-        # To avoid being rate-limited by bbref
-        time.sleep(4)
