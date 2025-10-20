@@ -1,5 +1,4 @@
 import time
-import datetime
 import duckdb
 import pandas as pd
 from nba_scraper.utils import Utils
@@ -89,7 +88,7 @@ def save_box_score_to_database(con, file_name: str, table_name: str, perform_ins
 
     df["team_game_id"] = file_name.split(".csv")[0]
     df["starter"] = [True] * 5 + [False] * (len(df) - 5)
-    df["date"] = file_name[0:8]
+    df["date"] = file_name[0:4] + "-" + file_name[4:6] + "-" + file_name[6:8]
 
     cols = ["team_game_id", "date", "Starters", "starter"] + \
         [c for c in df.columns if c not in [
@@ -205,6 +204,9 @@ def parse_schedule_and_results_to_database_format(df: pd.DataFrame):
 
     # Create game_id using home team and date.
     # Magic zero is added since that is how bbref stores the gameIds
+
+    # TODO THIS GIVES SOME NANs FOR SOME REASON INVESTIGATE, DID THE CHANGE IN THE DATE PARSING CAUSE THIS?
+    print(df["Home/Neutral"].to_string())
     df["game_id"] = df["Date"].apply(lambda v: str(v.date()).replace("-", "")) + \
         df["Home/Neutral"].apply(lambda v: "0" +
                                  NBA_TEAM_FULL_NAME_TO_ABBRIV[v])
@@ -272,7 +274,7 @@ def main(perform_inserts: bool = True, create_table: bool = False, nuke_database
             con, SCHEDULE_AND_RESULTS_TABLE_NAME)
 
     # save_season_of_box_scores_to_database(
-    #     con, seasons=2024, table_name=table_name, perform_inserts=perform_inserts)
+    #     con, seasons=2024, table_name=BOX_SCORE_TABLE_NAME, perform_inserts=perform_inserts)
 
     save_season_of_scedhule_and_results_to_database(
         con, seasons=2024, table_name=SCHEDULE_AND_RESULTS_TABLE_NAME, perform_inserts=perform_inserts)

@@ -1,6 +1,7 @@
 import os
 import functools
 import logging
+from datetime import date
 from typing import TypeVar
 import pandas as pd
 from nba_scraper.configuration.global_config import (
@@ -182,9 +183,28 @@ class Utils:
         return box_score_id[-3:]
 
     @staticmethod
+    @DeprecationWarning
     def get_game_date(box_score_id: str) -> str:
         """
             Extracts the game date from a box score ID.
             The date is the first 8 characters of the ID.
         """
         return box_score_id[:8]
+
+    @staticmethod
+    def get_current_season() -> str:
+        """
+            Returns the current season as a YYYY-YY format. Calculates the season by checking the month number, 
+            if today is in October, then it assumes it is the season that started in October.
+
+            E.g.    today = 2024-10-01 -> 2024-25
+                    today = 2024-03-01 -> 2023-24
+        """
+
+        year = date.today().year
+        month = date.today().month
+
+        if month >= 10:
+            return f"{year}-{year % 100 + 1}"
+
+        return f"{year-1}-{year % 100}"

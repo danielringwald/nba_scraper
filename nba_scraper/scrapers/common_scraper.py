@@ -21,7 +21,7 @@ class CommonScarper:
         except Exception as e:
             tries += 1
             print(
-                f"Error fetching page {endpoint}. Retrying {tries} of {MAX_RETRIES}: {e}")
+                f"Error fetching page {endpoint}. Retry {tries} / {MAX_RETRIES}: {e}")
             return CommonScarper.fetch_page(endpoint)
 
     @staticmethod
@@ -40,7 +40,7 @@ class CommonScarper:
             try:
                 page.goto(url, wait_until="domcontentloaded", timeout=45000)
             except Exception as e:
-                print(f"⚠️ Warning: initial load issue at {url}: {e}")
+                print(f"ERROR: initial load issue at {url}: {e}")
             # Wait a bit for Cloudflare JS challenge to auto-bypass
             page.wait_for_timeout(3100)
             html = page.content()
