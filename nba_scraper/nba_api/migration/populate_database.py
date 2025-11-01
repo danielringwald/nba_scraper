@@ -266,17 +266,21 @@ if __name__ == "__main__":
     pdb = PopulateDatabase(connection)
 
     nuke_database_tables = [
-        # "teams_information",
-        # "season_games",
-        # "box_score_traditional"
+        "box_score_traditional",
+        "season_games",
+        "teams_information",
+        "test_box_scores",
+        "test_schedule_and_results"
     ]
     if len(nuke_database_tables) > 0:
         for tn in nuke_database_tables:
             print(f"Dropping table: {tn}")
             nd.nuke_database_table(connection, tn)
 
-    # pdb.populate_teams_information_datebase()
-    # pdb.populate_season_games_datebase(
-    #     season="2024-25", exclude_game_labels=["Preseason"])
+    season = "2024-25"
+
+    pdb.populate_teams_information_datebase()
+    pdb.populate_season_games_datebase(
+        season=season, exclude_game_labels=["Preseason"])
     pdb.populate_box_score_datebase(
-        season="2024-25")
+        season=season)

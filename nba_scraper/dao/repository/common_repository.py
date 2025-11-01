@@ -1,6 +1,6 @@
 from abc import ABC
 import duckdb
-import regex as re
+import re
 
 from nba_scraper.configuration.database_config import DATABASE_PATH
 
@@ -29,8 +29,7 @@ class CommonRepository(ABC):
             raise ValueError(
                 f"Invalid season range: {season}. Expected consecutive years.")
 
-    def _database_select_all(self, where_clause_parameter_map: dict[str, any] = {}) -> list[tuple]:
-        # TODO Find out why it is dangerous to send a dict with default {}?
+    def _database_select_all(self, where_clause_parameter_map: dict[str, any] = None) -> list[tuple]:
         """
             where_clause takes arguemnts as a dict where the key is the column and the value is the value of the column
         """
@@ -42,13 +41,24 @@ class CommonRepository(ABC):
         """
         return self._database_perform_select(where_clause_parameter_map).fetchone()
 
-    def _database_perform_select(self, where_clause_parameter_map: dict[str, any] = {}) -> duckdb.DuckDBPyConnection:
+    def _database_perform_select(self, where_clause_parameter_map: dict[str, any] = None) -> duckdb.DuckDBPyConnection:
+        if where_clause_parameter_map is None:
+            # Due to a dict being mutable we cannot use it as a default parameter
+            # Calling function without where clause could modify the default parameter for future calls
+            where_clause_parameter_map = {}
+
         where_clause, where_parameters = self._create_where_clause(
             where_clause_parameter_map=where_clause_parameter_map)
 
         query = f"SELECT * FROM {self.TABLE_NAME} {where_clause};"
 
-        return self.con.execute(query, where_parameters)
+        query_result = self.con.execute(query, where_parameters)
+
+        if not query_result:
+            print(
+                f"WARN: No results for query: {query} Parameters: {where_clause_parameter_map}")
+
+        return query_result
 
     def _create_where_clause(self, where_clause_parameter_map: dict[str, any]) -> str:
         resulting_where_clause = ""

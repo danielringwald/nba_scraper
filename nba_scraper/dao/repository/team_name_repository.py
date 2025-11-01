@@ -1,4 +1,4 @@
-import regex as re
+import re
 from nba_scraper.dao.repository.common_repository import CommonRepository
 from nba_scraper.configuration.database_config import TEAM_NAME_INFORMATION_TABLE_NAME
 
@@ -22,16 +22,19 @@ class TeamNameRepository(CommonRepository):
         print(f"{self.__class__.__name__} initialized")
 
     def get_team_information(self, team_id: str | int) -> str | None:
+        where_clause_paramteres = self._create_where_clause_from_team_id(
+            team_id=team_id)
+
+        return self._database_select_one(where_clause_paramteres)
+
+    def _create_where_clause_from_team_id(self, team_id: str | int) -> dict[str, str | int]:
         if re.match(r'^[A-Z]{3}$', str(team_id)):
-            query = "SELECT * FROM teams_information WHERE team_abbreviation = ?"
+            return {"team_abbreviation": team_id}
         elif re.match(r'^\d{10}$', str(team_id)):
-            query = "SELECT * FROM teams_information WHERE team_id = ?"
+            return {"team_id": team_id}
         else:
             raise ValueError(
                 "Invalid team_id format. Must be a 3-letter abbreviation or a 10-digit team ID.")
-
-        where_clause_paramteres = {"team_id": team_id}
-        return self._database_select_one(where_clause_paramteres)
 
 
 class TeamNameInformation:
