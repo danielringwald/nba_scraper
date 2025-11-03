@@ -11,7 +11,7 @@ class SeasonGamesRepository(CommonRepository):
 
     def get_season_games(self, season: str) -> list[tuple]:
         """
-            duckdb implementation of Python DB API specification, https://peps.python.org/pep-0249/, returns a tuple
+            DuckDB implementation of Python DB API specification, https://peps.python.org/pep-0249/, returns a tuple
             that is why we type hint the tuple list.
         """
 

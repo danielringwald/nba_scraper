@@ -74,3 +74,8 @@ class CommonRepository(ABC):
                 resulting_parameters += [where_clause_parameter_map.get(k)]
 
         return resulting_where_clause, resulting_parameters
+
+    def get_table_columns(self) -> list[str]:
+        rows = self.con.execute(
+            f"PRAGMA table_info('{self.TABLE_NAME}')").fetchall()
+        return [row[1] for row in rows]

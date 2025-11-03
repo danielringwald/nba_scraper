@@ -17,11 +17,12 @@ class BoxScoreTraditionalRepository(CommonRepository):
         self.team_name_repository = TeamNameRepository()
 
         print(f"{self.__class__.__name__} initialized")
+        print("Box score traditional columns:", self.get_table_columns())
 
     def fetch_box_score_by_team_and_season(self, team_id: str = None, season: str = None) -> list[tuple]:
         team_id = self._transform_team_id(team_id=team_id)
 
-        if not season or season == "":
+        if not season:
             season = Utils.get_current_season()
 
         self._validate_season_format(season=season)
@@ -42,16 +43,16 @@ class BoxScoreTraditionalRepository(CommonRepository):
 
         return result or []
 
-    def _transform_team_id(self, team_id: str):
+    def _transform_team_id(self, team_id: str) -> str:
         if not team_id:
             raise ValueError("Must provide a valid team_id")
 
-        if re.match(r"^[A-Z]{3}$", team_id):
+        if re.fullmatch(r"^[A-Z]{3}$", team_id):
             return TeamNameInformation(*self.team_name_repository.get_team_information(
                 team_id)).get_team_id()
 
-        if re.match(r"^\d{10}$", team_id):
+        if re.fullmatch(r"^\d{10}$", team_id):
             return team_id
 
         raise ValueError(
-            "team_id has to be a 3-letter abbreviation or a 10 digit ID")
+            f"team_id: '{team_id}', Expected a 3-letter abbreviation or a 10 digit ID")

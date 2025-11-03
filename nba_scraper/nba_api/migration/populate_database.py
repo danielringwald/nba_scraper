@@ -99,11 +99,6 @@ class PopulateDatabase:
             raise ValueError(
                 "Expected a pandas DataFrame from ScheduleLeagueV2 from the NBA API response.")
 
-        if self.con.execute(f"SELECT COUNT(*) FROM {table_name} WHERE season = '{season}'").fetchone()[0] == season_games.shape[0]:
-            print(
-                f"Table {table_name} already populated for season {season}, skipping population.")
-            return
-
         season_games_subset = season_games[[
             "gameId",
             "seasonYear",
@@ -126,6 +121,12 @@ class PopulateDatabase:
             season_games_subset = season_games_subset[
                 season_games_subset["gameLabel"] != excluded_game_label
             ]
+
+        # Check if already populated, by doing this we save running DB inserts
+        if self.con.execute(f"SELECT COUNT(*) FROM {table_name} WHERE season = '{season}'").fetchone()[0] == season_games_subset.shape[0]:
+            print(
+                f"Table {table_name} already populated for season {season}, skipping population.")
+            return
 
         self.con.execute(
             f"INSERT INTO {table_name} SELECT * FROM season_games_subset")
@@ -218,6 +219,8 @@ class PopulateDatabase:
             column_order = [
                 col for col in box_score_data_subset.columns if not col in ["gameId", "season"]]
             column_order = ["gameId", "season"] + column_order
+
+            # This field is used in the connection query
             box_score_data_subset_reordered = box_score_data_subset[column_order]
 
             self.con.execute(
@@ -266,11 +269,11 @@ if __name__ == "__main__":
     pdb = PopulateDatabase(connection)
 
     nuke_database_tables = [
-        "box_score_traditional",
-        "season_games",
-        "teams_information",
-        "test_box_scores",
-        "test_schedule_and_results"
+        #    "box_score_traditional",
+        #    "season_games",
+        #    "teams_information",
+        #    "test_box_scores",
+        #    "test_schedule_and_results"
     ]
     if len(nuke_database_tables) > 0:
         for tn in nuke_database_tables:
@@ -282,5 +285,18 @@ if __name__ == "__main__":
     pdb.populate_teams_information_datebase()
     pdb.populate_season_games_datebase(
         season=season, exclude_game_labels=["Preseason"])
-    pdb.populate_box_score_datebase(
-        season=season)
+
+    tries = 3
+    for attempt in range(tries):
+        try:
+            pdb.populate_box_score_datebase(
+                season=season)
+            break
+        except Exception as e:
+            print(
+                f"Attempt {attempt + 1} of {tries} failed with error: {e}")
+            if attempt < tries - 1:
+                print("Retrying...")
+                sleep(5)
+            else:
+                print("All attempts failed.")
