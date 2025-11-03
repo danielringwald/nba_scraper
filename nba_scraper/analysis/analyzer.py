@@ -23,13 +23,25 @@ class Analyzer:
 
         return result_df[list(columns)]
 
+    def fetch_season_games(self, season: str) -> pd.DataFrame:
+        result_list: list[tuple] = self.season_games_repository.get_season_games(
+            season=season)
+        column_names = self.season_games_repository.get_table_columns()
+
+        result_df = pd.DataFrame(result_list, columns=column_names)
+
+        return result_df
+
 
 if __name__ == "__main__":
     # TODO Extend the abstract way of picking columns to a possible wrapper function
     analyzer = Analyzer()
-    data = analyzer.fetch_box_score_column_data(
-        "LAL", "2024-25", "game_id", "points", "assists", "total_rebounds")
-    print(data.shape)
+    # data = analyzer.fetch_box_score_column_data(
+    #     "LAL", "2024-25", "game_id", "points", "assists", "total_rebounds")
+
+    season_games = analyzer.fetch_season_games("2024-25")
+    season_games.plot(kind='bar', x='date', y=[
+                      'home_team_score', 'away_team_score'])
 
     # data.plot(kind='bar', x='game_id', y=[
     #           'points', 'assists', 'total_rebounds'])

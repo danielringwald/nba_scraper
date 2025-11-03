@@ -29,3 +29,15 @@ class SeasonGamesRepository(CommonRepository):
             return []
 
         return result
+
+    def get_single_game(self, game_id: str) -> tuple:
+        where_clause_parameters = {"game_id": game_id}
+
+        result = self._database_select_one(where_clause_parameters)
+
+        if not result:
+            print(
+                f"WARN: No game found for game_id {game_id}. Result: {result}")
+            return ()
+
+        return result
