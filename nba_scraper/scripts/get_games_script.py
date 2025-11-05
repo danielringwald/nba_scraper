@@ -24,7 +24,7 @@ def redirect_to_game_website(game_id: str) -> None:
 
     game_url_part = f'{games_df["away_team_abbreviation"]}-{games_df["home_team_abbreviation"]}-{games_df["game_id"]}'
 
-    full_url = f"{base_url}/{game_url_part}"
+    full_url = f"{base_url}{game_url_part}"
 
     webbrowser.open(full_url)
 

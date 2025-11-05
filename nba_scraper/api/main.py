@@ -1,5 +1,4 @@
 from fastapi import FastAPI, HTTPException
-from typing import List
 from nba_scraper.dao.repository.box_score_traditional_repository import BoxScoreTraditionalRepository
 
 app = FastAPI(title="NBA Stats API", version="0.1")

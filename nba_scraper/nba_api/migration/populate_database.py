@@ -122,6 +122,11 @@ class PopulateDatabase:
                 season_games_subset["gameLabel"] != excluded_game_label
             ]
 
+        # Filter out future games
+        season_games_subset = season_games_subset[
+            season_games_subset["gameDate"] < pd.to_datetime("today").date()
+        ]
+
         # Check if already populated, by doing this we save running DB inserts
         if self.con.execute(f"SELECT COUNT(*) FROM {table_name} WHERE season = '{season}'").fetchone()[0] == season_games_subset.shape[0]:
             print(
@@ -170,10 +175,14 @@ class PopulateDatabase:
                 box_score for box_score in season_game_ids if box_score[0] not in current_persisted_game_ids]
 
         for i, (game_id, *_) in enumerate(season_game_ids):
-            data = boxscoretraditionalv3.BoxScoreTraditionalV3(
-                game_id=game_id
-            )
-
+            try:
+                data = boxscoretraditionalv3.BoxScoreTraditionalV3(
+                    game_id=game_id
+                )
+            except Exception as e:
+                print(
+                    f"Failed to fetch box score for game_id {game_id} due to error: {e}")
+                raise Exception from e
             box_score_traditional: pd.DataFrame = data.get_data_frames()[0]
 
             if not isinstance(box_score_traditional, pd.DataFrame):
@@ -280,7 +289,7 @@ if __name__ == "__main__":
             print(f"Dropping table: {tn}")
             nd.nuke_database_table(connection, tn)
 
-    season = "2024-25"
+    season = "2025-26"
 
     pdb.populate_teams_information_datebase()
     pdb.populate_season_games_datebase(
