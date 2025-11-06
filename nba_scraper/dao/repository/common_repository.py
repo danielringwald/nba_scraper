@@ -29,11 +29,11 @@ class CommonRepository(ABC):
             raise ValueError(
                 f"Invalid season range: {season}. Expected consecutive years.")
 
-    def _database_select_all(self, where_clause_parameter_map: dict[str, any] = None) -> list[tuple]:
+    def _database_select_all(self, where_clause_parameter_map: dict[str, any] = None, order_by: str = None) -> list[tuple]:
         """
             where_clause takes arguemnts as a dict where the key is the column and the value is the value of the column
         """
-        return self._database_perform_select(where_clause_parameter_map).fetchall()
+        return self._database_perform_select(where_clause_parameter_map, order_by).fetchall()
 
     def _database_select_one(self, where_clause_parameter_map: dict[str, any]):
         """
@@ -41,16 +41,21 @@ class CommonRepository(ABC):
         """
         return self._database_perform_select(where_clause_parameter_map).fetchone()
 
-    def _database_perform_select(self, where_clause_parameter_map: dict[str, any] = None) -> duckdb.DuckDBPyConnection:
+    def _database_perform_select(self, where_clause_parameter_map: dict[str, any] = None, order_by: str = None) -> duckdb.DuckDBPyConnection:
         if where_clause_parameter_map is None:
             # Due to a dict being mutable we cannot use it as a default parameter
             # Calling function without where clause could modify the default parameter for future calls
             where_clause_parameter_map = {}
 
+        if order_by:
+            order_by_clause = f" ORDER BY {order_by} DESC"
+        else:
+            order_by_clause = ""
+
         where_clause, where_parameters = self._create_where_clause(
             where_clause_parameter_map=where_clause_parameter_map)
 
-        query = f"SELECT * FROM {self.TABLE_NAME} {where_clause};"
+        query = f"SELECT * FROM {self.TABLE_NAME} {where_clause} {order_by_clause};"
 
         query_result = self.con.execute(query, where_parameters)
 
@@ -79,3 +84,9 @@ class CommonRepository(ABC):
         rows = self.con.execute(
             f"PRAGMA table_info('{self.TABLE_NAME}')").fetchall()
         return [row[1] for row in rows]
+
+    def _format_result(self, result: list[tuple], include_columns: bool = True) -> list[tuple] | list[dict[str, str]]:
+        if include_columns:
+            column_names = self.get_table_columns()
+            return [dict(zip(column_names, row)) for row in result]
+        return result

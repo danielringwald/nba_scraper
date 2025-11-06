@@ -4,7 +4,6 @@ from nba_scraper.configuration.database_config import BOX_SCORE_TRADITIONAL_TABL
 
 from nba_scraper.dao.repository.common_repository import CommonRepository
 from nba_scraper.dao.repository.team_name_repository import TeamNameRepository
-from nba_scraper.dao.repository.team_name_repository import TeamNameInformation
 
 # TODO Change to use logging
 
@@ -20,7 +19,7 @@ class BoxScoreTraditionalRepository(CommonRepository):
         print("Box score traditional columns:", self.get_table_columns())
 
     def fetch_box_score_by_team_and_season(self, team_id: str = None, season: str = None) -> list[tuple]:
-        team_id = self._transform_team_id(team_id=team_id)
+        team_id = self.team_name_repository.transform_team_id(team_id=team_id)
 
         if not season:
             season = Utils.get_current_season()
@@ -43,16 +42,15 @@ class BoxScoreTraditionalRepository(CommonRepository):
 
         return result or []
 
-    def _transform_team_id(self, team_id: str) -> str:
-        if not team_id:
-            raise ValueError("Must provide a valid team_id")
+    def fetch_all_box_scores_for_team(self, team_id: str = None, limit: int = 5) -> list[tuple]:
+        team_id = self.team_name_repository.transform_team_id(team_id=team_id)
 
-        if re.fullmatch(r"^[A-Z]{3}$", team_id):
-            return TeamNameInformation(*self.team_name_repository.get_team_information(
-                team_id)).get_team_id()
+        where_parameters = {"home_team_id": team_id}
+        home_result = self._database_select_all(
+            where_clause_parameter_map=where_parameters)[0:limit]
+        where_parameters = {"away_team_id": team_id}
+        away_result = self._database_select_all(
+            where_clause_parameter_map=where_parameters)[0:limit]
+        result = home_result + away_result
 
-        if re.fullmatch(r"^\d{10}$", team_id):
-            return team_id
-
-        raise ValueError(
-            f"team_id: '{team_id}', Expected a 3-letter abbreviation or a 10 digit ID")
+        return result or []

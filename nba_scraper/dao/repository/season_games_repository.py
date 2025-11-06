@@ -1,5 +1,6 @@
 from nba_scraper.configuration.database_config import SEASON_GAMES_TABLE_NAME
 from nba_scraper.dao.repository.common_repository import CommonRepository
+from nba_scraper.dao.repository.team_name_repository import TeamNameRepository
 
 
 class SeasonGamesRepository(CommonRepository):
@@ -7,9 +8,11 @@ class SeasonGamesRepository(CommonRepository):
     def __init__(self):
         super().__init__()
         self.TABLE_NAME = SEASON_GAMES_TABLE_NAME
+        self.team_name_repository = TeamNameRepository()
+
         print(f"{self.__class__.__name__} initialized")
 
-    def get_season_games(self, season: str) -> list[tuple]:
+    def get_season_games(self, season: str, include_columns: bool = True) -> list[tuple]:
         """
             DuckDB implementation of Python DB API specification, https://peps.python.org/pep-0249/, returns a tuple
             that is why we type hint the tuple list.
@@ -28,9 +31,9 @@ class SeasonGamesRepository(CommonRepository):
                 f"WARN: No games found for season {season}. Result: {result}")
             return []
 
-        return result
+        return self._format_result(result, include_columns=include_columns)
 
-    def get_single_game(self, game_id: str) -> tuple:
+    def get_single_game(self, game_id: str, include_columns: bool = True) -> tuple:
         where_clause_parameters = {"game_id": game_id}
 
         result = self._database_select_one(where_clause_parameters)
@@ -40,4 +43,24 @@ class SeasonGamesRepository(CommonRepository):
                 f"WARN: No game found for game_id {game_id}. Result: {result}")
             return ()
 
-        return result
+        return self._format_result(result, include_columns=include_columns)
+
+    def get_games_by_team(self, team_id: str, limit: int = 5, include_columns: bool = True) -> list[tuple] | list[dict[str, str]]:
+        team_id = self.team_name_repository.transform_team_id(team_id=team_id)
+
+        where_clause_parameters = {"home_team_id": team_id}
+        home_result = self._database_select_all(
+            where_clause_parameter_map=where_clause_parameters, order_by="date")[0:limit]
+
+        where_clause_parameters = {"away_team_id": team_id}
+        away_result = self._database_select_all(
+            where_clause_parameter_map=where_clause_parameters, order_by="date")[0:limit]
+
+        result = home_result + away_result
+
+        if not result:
+            print(
+                f"WARN: No games found for team_id {team_id}. Result: {result}")
+            return []
+
+        return self._format_result(result, include_columns=include_columns)

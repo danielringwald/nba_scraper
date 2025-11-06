@@ -36,6 +36,20 @@ class TeamNameRepository(CommonRepository):
             raise ValueError(
                 "Invalid team_id format. Must be a 3-letter abbreviation or a 10-digit team ID.")
 
+    def transform_team_id(self, team_id: str) -> str:
+        if not team_id:
+            raise ValueError("Must provide a valid team_id")
+
+        if re.fullmatch(r"^[A-Z]{3}$", team_id):
+            return TeamNameInformation(*self.get_team_information(
+                team_id)).get_team_id()
+
+        if re.fullmatch(r"^\d{10}$", team_id):
+            return team_id
+
+        raise ValueError(
+            f"team_id: '{team_id}', Expected a 3-letter abbreviation or a 10 digit ID")
+
 
 class TeamNameInformation:
 
