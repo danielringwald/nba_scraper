@@ -160,7 +160,8 @@ class PopulateDatabase:
 
         self.perform_create_box_score_table(table_name=table_name)
 
-        season_game_ids = self.sgd.get_season_games(season=season)
+        season_game_ids = self.sgd.get_season_games(
+            season=season, include_columns=False)
 
         if not overwrite_all_entries:
             # Make into set to get unique game_ids
@@ -183,8 +184,8 @@ class PopulateDatabase:
                 print(
                     f"Failed to fetch box score for game_id {game_id} due to error: {e}")
                 raise Exception from e
-            box_score_traditional: pd.DataFrame = data.get_data_frames()[0]
 
+            box_score_traditional: pd.DataFrame = data.get_data_frames()[0]
             if not isinstance(box_score_traditional, pd.DataFrame):
                 raise ValueError(
                     "Expected a pandas DataFrame from BoxScoreTraditionalV3 from the NBA API response.")
@@ -217,12 +218,15 @@ class PopulateDatabase:
                 "points",
                 "plusMinusPoints"
             ]]
-
             box_score_data_subset["season"] = season
             box_score_data_subset["position"] = box_score_data_subset["position"].fillna(
                 "").astype(bool)
-            box_score_data_subset["minutes"] = box_score_data_subset["minutes"].apply(lambda x: int(
-                x.split(":")[0]) * 60 + int(x.split(":")[1]) if isinstance(x, str) and ":" in x else 0)
+
+            # Old code that broke when the minutes weren't correctly formatted
+            # box_score_data_subset["minutes"] = box_score_data_subset["minutes"].apply(lambda x: int(
+            #     x.split(":")[0]) * 60 + int(x.split(":")[1]) if isinstance(x, str) and ":" in x else 0)
+            box_score_data_subset["minutes"] = box_score_data_subset["minutes"].apply(
+                _parse_minutes)
 
             # Reorder columns to have gameId and season first
             column_order = [
@@ -231,7 +235,7 @@ class PopulateDatabase:
 
             # This field is used in the connection query
             box_score_data_subset_reordered = box_score_data_subset[column_order]
-
+            print(f"Attempting to insert {game_id}")
             self.con.execute(
                 f"INSERT INTO {table_name} SELECT * FROM box_score_data_subset_reordered")
             print(
@@ -273,6 +277,19 @@ class PopulateDatabase:
         print(f"Table {table_name} created successfully")
 
 
+def _parse_minutes(x):
+    try:
+        if isinstance(x, str) and ":" in x:
+            mins, secs = x.split(":")
+            return int(mins) * 60 + int(secs)
+        elif isinstance(x, (int, float)):
+            # already numeric
+            return int(x)
+    except Exception:
+        pass  # fall through to return -1
+    return -1  # fallback for invalid/missing data
+
+
 if __name__ == "__main__":
     connection = duckdb.connect(database='nba_scraper.db', read_only=False)
     pdb = PopulateDatabase(connection)
@@ -289,7 +306,7 @@ if __name__ == "__main__":
             print(f"Dropping table: {tn}")
             nd.nuke_database_table(connection, tn)
 
-    season = "2025-26"
+    season = "2022-23"
 
     pdb.populate_teams_information_datebase()
     pdb.populate_season_games_datebase(

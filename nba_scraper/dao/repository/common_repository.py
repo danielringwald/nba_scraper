@@ -1,6 +1,7 @@
 from abc import ABC
 import duckdb
 import re
+from nba_scraper.utils import Utils
 
 from nba_scraper.configuration.database_config import DATABASE_PATH
 
@@ -86,6 +87,8 @@ class CommonRepository(ABC):
         return [row[1] for row in rows]
 
     def _format_result(self, result: list[tuple], include_columns: bool = True) -> list[tuple] | list[dict[str, str]]:
+        result = Utils.to_list(result)
+
         if include_columns:
             column_names = self.get_table_columns()
             return [dict(zip(column_names, row)) for row in result]

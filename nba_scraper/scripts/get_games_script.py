@@ -14,13 +14,14 @@ def redirect_to_game_website(game_id: str) -> None:
 
     base_url = "https://www.nba.com/game/"
 
-    game = season_games_repo.get_single_game(game_id=game_id)
+    game = season_games_repo.get_single_game(
+        game_id=game_id, include_columns=False)
     if not game:
         print(f"No game found with game_id: {game_id}")
         return
     columns = season_games_repo.get_table_columns()
 
-    games_df = pd.DataFrame([game], columns=columns).iloc[0]
+    games_df = pd.DataFrame(game, columns=columns).iloc[0]
 
     game_url_part = f'{games_df["away_team_abbreviation"]}-{games_df["home_team_abbreviation"]}-{games_df["game_id"]}'
 
