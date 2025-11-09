@@ -286,6 +286,7 @@ def _parse_minutes(x):
             # already numeric
             return int(x)
     except Exception:
+        print("WARN: Failed to parse minutes value. Defaulting to -1")
         pass  # fall through to return -1
     return -1  # fallback for invalid/missing data
 
@@ -306,7 +307,7 @@ if __name__ == "__main__":
             print(f"Dropping table: {tn}")
             nd.nuke_database_table(connection, tn)
 
-    season = "2022-23"
+    season = "2021-22"
 
     pdb.populate_teams_information_datebase()
     pdb.populate_season_games_datebase(
