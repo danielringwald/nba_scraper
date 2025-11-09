@@ -287,7 +287,6 @@ def _parse_minutes(x):
             return int(x)
     except Exception:
         print("WARN: Failed to parse minutes value. Defaulting to -1")
-        pass  # fall through to return -1
     return -1  # fallback for invalid/missing data
 
 

@@ -1,6 +1,13 @@
-from fastapi import FastAPI, HTTPException, Query
-from nba_scraper.dao.repository.box_score_traditional_repository import BoxScoreTraditionalRepository
+from nba_scraper.configuration.logging_config import init_logging
 from nba_scraper.dao.repository.season_games_repository import SeasonGamesRepository
+from nba_scraper.dao.repository.box_score_traditional_repository import BoxScoreTraditionalRepository
+from fastapi import FastAPI, HTTPException, Query
+import logging
+
+init_logging()
+
+logger = logging.getLogger(__name__)
+logger.info("Starting NBA Scraper API")
 
 app = FastAPI(title="NBA Stats API", version="0.1")
 

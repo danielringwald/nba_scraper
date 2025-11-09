@@ -66,7 +66,7 @@ class CommonRepository(ABC):
 
         return query_result
 
-    def _create_where_clause(self, where_clause_parameter_map: dict[str, any]) -> str:
+    def _create_where_clause(self, where_clause_parameter_map: dict[str, any]) -> tuple[str, list[str]]:
         resulting_where_clause = ""
         resulting_parameters = []
 
