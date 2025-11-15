@@ -41,7 +41,7 @@ class PopulateDatabase:
                 self.populate_box_score_datebase(
                     season=season)
                 break
-            except Exception as e:
+            except ValueError as e:
                 print(
                     f"Attempt {attempt + 1} of {tries} failed with error: {e}")
                 if attempt < tries - 1:
@@ -84,8 +84,9 @@ class PopulateDatabase:
                     "team_name": [team_name]
                 })
 
+            self.con.register("dataframe_to_insert", df)
             self.con.execute(
-                f"INSERT INTO {table_name} SELECT * FROM df")
+                f"INSERT INTO {table_name} SELECT * FROM dataframe_to_insert")
             print("Inserted team:", team_name)
 
     def perform_create_teams_information_table(self, table_name: str):
@@ -101,7 +102,6 @@ class PopulateDatabase:
     # Games Schedule
 
     def populate_season_games_datebase(self, season: str = "2024-25", exclude_game_labels: list[str] = None):
-        # TODO Extend to support multiple seasons, remember to update method populate_all_databases
         if exclude_game_labels is None:
             exclude_game_labels = []
 
@@ -218,7 +218,7 @@ class PopulateDatabase:
             except Exception as e:
                 print(
                     f"Failed to fetch box score for game_id {game_id} due to error: {e}")
-                raise Exception from e
+                raise ValueError from e
 
             box_score_traditional: pd.DataFrame = data.get_data_frames()[0]
             if not isinstance(box_score_traditional, pd.DataFrame):
@@ -268,10 +268,13 @@ class PopulateDatabase:
                 col for col in box_score_data_subset.columns if not col in ["gameId", "season"]]
             column_order = ["gameId", "season"] + column_order
 
-            # This field is used in the connection query
+            # Register the DataFrame as a named relation for DuckDB
             box_score_data_subset_reordered = box_score_data_subset[column_order]
+            self.con.register("temp_box_score",
+                              box_score_data_subset_reordered)
             self.con.execute(
-                f"INSERT INTO {table_name} SELECT * FROM box_score_data_subset_reordered")
+                f"INSERT INTO {table_name} SELECT * FROM temp_box_score")
+
             logger.info(
                 "Inserted box score for game_id %s. %d games remaining.", game_id, len(season_game_ids)-i-1)
             sleep(RATE_LIMIT_SLEEP_SECONDS)
@@ -319,7 +322,7 @@ def _parse_minutes(x):
         elif isinstance(x, (int, float)):
             # already numeric
             return int(x)
-    except Exception:
+    except TypeError:
         logger.warning("Failed to parse minutes value. Defaulting to -1")
     return -1  # fallback for invalid/missing data
 
@@ -344,7 +347,7 @@ if __name__ == "__main__":
         pdb.populate_all_databases(season=season_to_populate)
     except KeyboardInterrupt:
         logger.info("Process interrupted by user. Exiting...")
-    except Exception as e:
+    except ValueError as e:
         logger.error("An error occurred: %s", e)
     finally:
         if connection:
