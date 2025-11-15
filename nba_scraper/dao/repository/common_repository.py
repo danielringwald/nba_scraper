@@ -70,19 +70,54 @@ class CommonRepository(ABC):
         return query_result
 
     def _create_where_clause(self, where_clause_parameter_map: dict[str, any]) -> tuple[str, list[str]]:
-        resulting_where_clause = ""
-        resulting_parameters = []
+        """
+            If where_clause_parameter_map is just key-values, then it will default to "AND" logic. 
 
-        if len(where_clause_parameter_map) > 0:
+            Accepts structured dict with AND and OR:
+            {
+                "AND": {
+                    "column1": "value1"
+                    "column2": "value2"
+                },
+                "OR": {
+                    "column3": "value3"
+                    "column4": "value4"
+                }
+            }
+        """
+        if not where_clause_parameter_map:
+            return "", []
 
-            # Add leading where to make it easier to add the "AND"s
-            resulting_where_clause += "WHERE 1=1 "
+        parameters = []
+        clauses = []
 
-            for k in where_clause_parameter_map:
-                resulting_where_clause += f"AND {k} = ? "
-                resulting_parameters += [where_clause_parameter_map.get(k)]
+        # Case 1: New nested syntax using AND / OR groups
+        if "AND" in where_clause_parameter_map or "OR" in where_clause_parameter_map:
+            if "AND" in where_clause_parameter_map:
+                and_parts = []
+                for col, val in where_clause_parameter_map["AND"].items():
+                    and_parts.append(f"{col} = ?")
+                    parameters.append(val)
+                clauses.append("(" + " AND ".join(and_parts) + ")")
 
-        return resulting_where_clause, resulting_parameters
+            if "OR" in where_clause_parameter_map:
+                or_parts = []
+                for col, val in where_clause_parameter_map["OR"].items():
+                    or_parts.append(f"{col} = ?")
+                    parameters.append(val)
+                clauses.append("(" + " OR ".join(or_parts) + ")")
+
+            final_clause = "WHERE " + " AND ".join(clauses)
+            print(final_clause, parameters)
+            return final_clause, parameters
+
+        # Case 2: Old simple flat dict → AND logic
+        base_clause = "WHERE 1=1"
+        for col, val in where_clause_parameter_map.items():
+            base_clause += f" AND {col} = ?"
+            parameters.append(val)
+
+        return base_clause, parameters
 
     def get_table_columns(self) -> list[str]:
         rows = self.con.execute(

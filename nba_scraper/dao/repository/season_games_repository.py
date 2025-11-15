@@ -51,15 +51,10 @@ class SeasonGamesRepository(CommonRepository):
     def get_games_by_team(self, team_id: str, limit: int = 5, include_columns: bool = True) -> list[tuple] | list[dict[str, str]]:
         team_id = self.team_name_repository.transform_team_id(team_id=team_id)
 
-        where_clause_parameters = {"home_team_id": team_id}
-        home_result = self._database_select_all(
-            where_clause_parameter_map=where_clause_parameters, order_by="date")[0:limit]
-
-        where_clause_parameters = {"away_team_id": team_id}
-        away_result = self._database_select_all(
-            where_clause_parameter_map=where_clause_parameters, order_by="date")[0:limit]
-
-        result = home_result + away_result
+        where_clause_parameters = {
+            "OR": {"home_team_id": team_id, "away_team_id": team_id}}
+        result = self._database_select_all(
+            where_clause_parameter_map=where_clause_parameters)[0:limit]
 
         if not result:
             logger.warning(

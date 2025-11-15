@@ -8,10 +8,9 @@ logger = logging.getLogger(__name__)
 
 
 class TeamNameRepository(CommonRepository):
-    # TODO Make the varibale TEAM_NAME_INFORMATION_TABLE_NAME be in the docstrings
     """
+        Database schema for team name repository, table name specified by TEAM_NAME_INFORMATION_TABLE_NAME
 
-        Database schema for team_name_information
         CREATE TABLE IF NOT EXISTS {TEAM_NAME_INFORMATION_TABLE_NAME} (
                 team_id TEXT PRIMARY KEY,
                 team_abbreviation TEXT,

@@ -11,6 +11,39 @@ logger = logging.getLogger(__name__)
 
 
 class BoxScoreTraditionalRepository(CommonRepository):
+    """
+        Database schema for box score traditional repository, table name specified by BOX_SCORE_TRADITIONAL_TABLE_NAME
+
+        SQL schema:
+        CREATE TABLE IF NOT EXISTS {BOX_SCORE_TRADITIONAL_TABLE_NAME} (
+                game_id TEXT,
+                season TEXT,
+                team_id TEXT,
+                player_id TEXT,
+                player_name TEXT,
+                starter BOOLEAN,
+                seconds_played INT,
+                field_goals_made INT,
+                field_goals_attempted INT,
+                field_goals_percentage DOUBLE,
+                three_pointers_made INT,
+                three_pointers_attempted INT,
+                three_pointers_percentage DOUBLE,
+                free_throws_made INT,
+                free_throws_attempted INT,
+                free_throws_percentage DOUBLE,
+                offensive_rebounds INT,
+                defensive_rebounds INT,
+                total_rebounds INT,
+                assists INT,
+                steals INT,
+                blocks INT,
+                turnovers INT,
+                personal_fouls INT,
+                points INT,
+                plus_minus_points DOUBLE
+            )
+    """
 
     def __init__(self):
         super().__init__()
@@ -51,13 +84,10 @@ class BoxScoreTraditionalRepository(CommonRepository):
     def fetch_all_box_scores_for_team(self, team_id: str = None, limit: int = 5) -> list[tuple]:
         team_id = self.team_name_repository.transform_team_id(team_id=team_id)
 
-        where_parameters = {"home_team_id": team_id}
-        home_result = self._database_select_all(
+        where_parameters = {
+            "OR": {"home_team_id": team_id, "away_team_id": team_id}}
+        result = self._database_select_all(
             where_clause_parameter_map=where_parameters)[0:limit]
-        where_parameters = {"away_team_id": team_id}
-        away_result = self._database_select_all(
-            where_clause_parameter_map=where_parameters)[0:limit]
-        result = home_result + away_result
 
         return result or []
 
