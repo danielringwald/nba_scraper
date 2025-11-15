@@ -42,7 +42,7 @@ def get_all_box_scores_from_season(season: str):
 
 
 @app.get("/season/games/latest/")
-def get_n_latest_box_scores_by_team(team_id: str, annotate_winner: bool = Query(False), limit: int = 5):
+def get_n_latest_box_scores_by_team(team_id: str, annotate_winner: bool = Query(True), limit: int = 5):
     try:
         results = season_games_repo.get_games_by_team(
             team_id=team_id, limit=limit)

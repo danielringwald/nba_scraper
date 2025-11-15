@@ -3,7 +3,7 @@ import duckdb
 import pandas as pd
 from nba_scraper.utils import Utils
 from nba_scraper.configuration.box_score import TOTAL_BOX_SCORES_PATH
-import nba_scraper.migration.nuke_database as nd
+import nba_scraper.scripts.nuke_database as nd
 
 
 def perform_create_table(con, table_name: str):

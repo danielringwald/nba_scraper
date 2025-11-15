@@ -18,7 +18,7 @@ def init_logging():
     - Force=True ensures configuration applies even if logging was partially initialized
     """
     logging.basicConfig(
-        level=logging.DEBUG,
+        level=logging.INFO,
         format="%(asctime)s [%(levelname)s] %(name)s - %(message)s",
         handlers=[
             logging.handlers.RotatingFileHandler(

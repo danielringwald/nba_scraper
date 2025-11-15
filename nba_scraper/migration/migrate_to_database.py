@@ -5,7 +5,7 @@ from nba_scraper.utils import Utils
 from nba_scraper.configuration.global_config import NBA_TEAM_FULL_NAME_TO_ABBRIV
 from nba_scraper.configuration.box_score import TOTAL_BOX_SCORES_PATH
 from nba_scraper.configuration.schedule_and_results import SCHEDULE_AND_RESULTS_PATH
-import nba_scraper.migration.nuke_database as nd
+import nba_scraper.scripts.nuke_database as nd
 
 rename_box_score_columns_mapping = {
     "Starters": "player_name",

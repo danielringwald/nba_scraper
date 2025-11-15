@@ -2,15 +2,22 @@ from time import sleep
 import duckdb
 import pandas as pd
 import regex as re
+import logging
+import argparse
 
 from nba_api.stats.library.data import teams as NBA_TEAMS
 from nba_api.stats.endpoints import scheduleleaguev2
 from nba_api.stats.endpoints import boxscoretraditionalv3
 
-import nba_scraper.migration.nuke_database as nd
 from nba_scraper.dao.repository.season_games_repository import SeasonGamesRepository
 from nba_scraper.dao.repository.box_score_traditional_repository import BoxScoreTraditionalRepository
+# TODO add PlayerCareerStatsRepository (has all the PTS per games, etc.)
 from nba_scraper.configuration.database_config import TEAM_NAME_INFORMATION_TABLE_NAME
+from nba_scraper.configuration.logging_config import init_logging
+from nba_scraper.utils import Utils
+
+init_logging()
+logger = logging.getLogger(__name__)
 
 RATE_LIMIT_SLEEP_SECONDS = 1
 
@@ -22,12 +29,26 @@ class PopulateDatabase:
         self.sgd = SeasonGamesRepository()
         self.bstr = BoxScoreTraditionalRepository()
 
-    def populate_all_databases(self):
-        season = "2024-25"
-        self.populate_all_databases()
+    def populate_all_databases(self, season: str = "2024-25"):
+        logger.info("Starting database population for season %s", season)
+        self.populate_teams_information_datebase()
         self.populate_season_games_datebase(
             season=season, exclude_game_labels=["Preseason"])
-        self.populate_box_score_datebase(season=season)
+
+        tries = 3
+        for attempt in range(tries):
+            try:
+                self.populate_box_score_datebase(
+                    season=season)
+                break
+            except Exception as e:
+                print(
+                    f"Attempt {attempt + 1} of {tries} failed with error: {e}")
+                if attempt < tries - 1:
+                    print("Retrying...")
+                    sleep(5)
+                else:
+                    print("All attempts failed.")
 
     def populate_teams_information_datebase(self):
         table_name = TEAM_NAME_INFORMATION_TABLE_NAME
@@ -79,8 +100,10 @@ class PopulateDatabase:
 
     # Games Schedule
 
-    def populate_season_games_datebase(self, season: str = "2024-25", exclude_game_labels: list[str] = []):
+    def populate_season_games_datebase(self, season: str = "2024-25", exclude_game_labels: list[str] = None):
         # TODO Extend to support multiple seasons, remember to update method populate_all_databases
+        if exclude_game_labels is None:
+            exclude_game_labels = []
 
         if not re.match(r'^\d{4}-\d{2}$', season):
             raise ValueError(
@@ -133,6 +156,16 @@ class PopulateDatabase:
                 f"Table {table_name} already populated for season {season}, skipping population.")
             return
 
+        pre_persisted_game_ids = [season_game[0] for season_game in self.sgd.get_season_games(
+            season=season, include_columns=False)]
+
+        # Filter out already persisted games
+        season_games_subset = season_games_subset[
+            ~season_games_subset["gameId"].isin(pre_persisted_game_ids)
+        ]
+
+        # Clear existing entries for the season to avoid duplicates
+
         self.con.execute(
             f"INSERT INTO {table_name} SELECT * FROM season_games_subset")
         print(f"Inserted season games for season {season}")
@@ -176,6 +209,8 @@ class PopulateDatabase:
                 box_score for box_score in season_game_ids if box_score[0] not in current_persisted_game_ids]
 
         for i, (game_id, *_) in enumerate(season_game_ids):
+            logger.info("Attempting to persist %s", game_id)
+
             try:
                 data = boxscoretraditionalv3.BoxScoreTraditionalV3(
                     game_id=game_id
@@ -209,8 +244,8 @@ class PopulateDatabase:
                 "freeThrowsPercentage",
                 "reboundsOffensive",
                 "reboundsDefensive",
-                "reboundsTotal",
-                "assists",
+                "reboundsTotal",  # 19
+                "assists",  # 20
                 "steals",
                 "blocks",
                 "turnovers",
@@ -235,11 +270,10 @@ class PopulateDatabase:
 
             # This field is used in the connection query
             box_score_data_subset_reordered = box_score_data_subset[column_order]
-            print(f"Attempting to insert {game_id}")
             self.con.execute(
                 f"INSERT INTO {table_name} SELECT * FROM box_score_data_subset_reordered")
-            print(
-                f"Inserted box score for game_id {game_id}. {len(season_game_ids)-i-1} games remaining.")
+            logger.info(
+                "Inserted box score for game_id %s. %d games remaining.", game_id, len(season_game_ids)-i-1)
             sleep(RATE_LIMIT_SLEEP_SECONDS)
 
     def perform_create_box_score_table(self, table_name: str):
@@ -286,43 +320,32 @@ def _parse_minutes(x):
             # already numeric
             return int(x)
     except Exception:
-        print("WARN: Failed to parse minutes value. Defaulting to -1")
+        logger.warning("Failed to parse minutes value. Defaulting to -1")
     return -1  # fallback for invalid/missing data
 
 
 if __name__ == "__main__":
-    connection = duckdb.connect(database='nba_scraper.db', read_only=False)
-    pdb = PopulateDatabase(connection)
+    parser = argparse.ArgumentParser(description="NBA scraper script")
+    parser.add_argument(
+        "season", help="NBA season to populate, e.g., '2023-24'")
 
-    nuke_database_tables = [
-        #    "box_score_traditional",
-        #    "season_games",
-        #    "teams_information",
-        #    "test_box_scores",
-        #    "test_schedule_and_results"
-    ]
-    if len(nuke_database_tables) > 0:
-        for tn in nuke_database_tables:
-            print(f"Dropping table: {tn}")
-            nd.nuke_database_table(connection, tn)
+    args = parser.parse_args()
 
-    season = "2021-22"
+    if not re.match(r'^\d{4}-\d{2}$', args.season):
+        season_to_populate = Utils.get_current_season()
+    else:
+        season_to_populate = args.season
 
-    pdb.populate_teams_information_datebase()
-    pdb.populate_season_games_datebase(
-        season=season, exclude_game_labels=["Preseason"])
+    connection = None
+    try:
+        connection = duckdb.connect(database='nba_scraper.db', read_only=False)
+        pdb = PopulateDatabase(connection)
 
-    tries = 3
-    for attempt in range(tries):
-        try:
-            pdb.populate_box_score_datebase(
-                season=season)
-            break
-        except Exception as e:
-            print(
-                f"Attempt {attempt + 1} of {tries} failed with error: {e}")
-            if attempt < tries - 1:
-                print("Retrying...")
-                sleep(5)
-            else:
-                print("All attempts failed.")
+        pdb.populate_all_databases(season=season_to_populate)
+    except KeyboardInterrupt:
+        logger.info("Process interrupted by user. Exiting...")
+    except Exception as e:
+        logger.error("An error occurred: %s", e)
+    finally:
+        if connection:
+            connection.close()

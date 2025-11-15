@@ -1,4 +1,3 @@
-import re
 from nba_scraper.utils import Utils
 from nba_scraper.configuration.database_config import BOX_SCORE_TRADITIONAL_TABLE_NAME
 
@@ -16,7 +15,10 @@ class BoxScoreTraditionalRepository(CommonRepository):
         self.team_name_repository = TeamNameRepository()
 
         print(f"{self.__class__.__name__} initialized")
-        print("Box score traditional columns:", self.get_table_columns())
+        try:
+            print("Box score traditional columns:", self.get_table_columns())
+        except Exception as e:
+            print("Error fetching table columns:", e)
 
     def fetch_box_score_by_team_and_season(self, team_id: str = None, season: str = None) -> list[tuple]:
         team_id = self.team_name_repository.transform_team_id(team_id=team_id)
@@ -52,5 +54,12 @@ class BoxScoreTraditionalRepository(CommonRepository):
         away_result = self._database_select_all(
             where_clause_parameter_map=where_parameters)[0:limit]
         result = home_result + away_result
+
+        return result or []
+
+    def fetch_all_box_scores_for_game_id(self, game_id: str) -> list[tuple]:
+        where_parameters = {"game_id": game_id}
+        result = self._database_select_all(
+            where_clause_parameter_map=where_parameters)
 
         return result or []

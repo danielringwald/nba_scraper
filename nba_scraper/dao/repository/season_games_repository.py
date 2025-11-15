@@ -1,6 +1,9 @@
+import logging
 from nba_scraper.configuration.database_config import SEASON_GAMES_TABLE_NAME
 from nba_scraper.dao.repository.common_repository import CommonRepository
 from nba_scraper.dao.repository.team_name_repository import TeamNameRepository
+
+logger = logging.getLogger(__name__)
 
 
 class SeasonGamesRepository(CommonRepository):
@@ -10,7 +13,7 @@ class SeasonGamesRepository(CommonRepository):
         self.TABLE_NAME = SEASON_GAMES_TABLE_NAME
         self.team_name_repository = TeamNameRepository()
 
-        print(f"{self.__class__.__name__} initialized")
+        logger.info("%s initialized", self.__class__.__name__)
 
     def get_season_games(self, season: str, include_columns: bool = True) -> list[tuple]:
         """
@@ -27,8 +30,8 @@ class SeasonGamesRepository(CommonRepository):
 
         # list is truthy so if empty it will be false
         if not result:
-            print(
-                f"WARN: No games found for season {season}. Result: {result}")
+            logger.warning(
+                "No games found for season %s. Result: %s", season, result)
             return []
 
         return self._format_result(result, include_columns=include_columns)
@@ -39,8 +42,8 @@ class SeasonGamesRepository(CommonRepository):
         result = self._database_select_one(where_clause_parameters)
 
         if not result:
-            print(
-                f"WARN: No game found for game_id {game_id}. Result: {result}")
+            logger.warning(
+                "No game found for game_id %s. Result: %s", game_id, result)
             return ()
 
         return self._format_result(result, include_columns=include_columns)
@@ -59,8 +62,14 @@ class SeasonGamesRepository(CommonRepository):
         result = home_result + away_result
 
         if not result:
-            print(
-                f"WARN: No games found for team_id {team_id}. Result: {result}")
+            logger.warning(
+                "No games found for team_id %s. Result: %s", team_id, result)
             return []
 
-        return self._format_result(result, include_columns=include_columns)
+        response = self._format_result(result, include_columns=include_columns)
+
+        # Sort the list by date descending, HARD dependency on included columns being true
+        # TODO Break hard dependency and update database tools to allow OR queries
+        response.sort(key=lambda x: x['date'], reverse=True)
+
+        return response

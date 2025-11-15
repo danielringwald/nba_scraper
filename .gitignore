@@ -7,8 +7,11 @@ nba_scraper_env/*
 nba_scraper.db
 clonecmd.bat
 
-// Temporary database files
+# Temporary database files
 *.wal
 
-// Logs
+# Logs
 *.log
+
+# Database
+db_backups/*
