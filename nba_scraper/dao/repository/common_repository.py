@@ -1,9 +1,12 @@
 from abc import ABC
 import duckdb
 import re
-from nba_scraper.utils import Utils
+import logging
 
+from nba_scraper.utils import Utils
 from nba_scraper.configuration.database_config import DATABASE_PATH
+
+logger = logging.getLogger(__name__)
 
 
 class CommonRepository(ABC):
@@ -61,8 +64,8 @@ class CommonRepository(ABC):
         query_result = self.con.execute(query, where_parameters)
 
         if not query_result:
-            print(
-                f"WARN: No results for query: {query} Parameters: {where_clause_parameter_map}")
+            logger.warning(
+                "No results for query: %s Parameters: %s", query, where_clause_parameter_map)
 
         return query_result
 

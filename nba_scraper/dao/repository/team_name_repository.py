@@ -1,6 +1,10 @@
 import re
+import logging
+
 from nba_scraper.dao.repository.common_repository import CommonRepository
 from nba_scraper.configuration.database_config import TEAM_NAME_INFORMATION_TABLE_NAME
+
+logger = logging.getLogger(__name__)
 
 
 class TeamNameRepository(CommonRepository):
@@ -19,7 +23,7 @@ class TeamNameRepository(CommonRepository):
         super().__init__()
         self.TABLE_NAME = TEAM_NAME_INFORMATION_TABLE_NAME
 
-        print(f"{self.__class__.__name__} initialized")
+        logger.info("%s initialized", self.__class__.__name__)
 
     def get_team_information(self, team_id: str | int) -> str | None:
         where_clause_paramteres = self._create_where_clause_from_team_id(

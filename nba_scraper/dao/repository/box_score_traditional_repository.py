@@ -1,10 +1,13 @@
+import logging
+import duckdb
+
 from nba_scraper.utils import Utils
 from nba_scraper.configuration.database_config import BOX_SCORE_TRADITIONAL_TABLE_NAME
-
 from nba_scraper.dao.repository.common_repository import CommonRepository
 from nba_scraper.dao.repository.team_name_repository import TeamNameRepository
 
-# TODO Change to use logging
+
+logger = logging.getLogger(__name__)
 
 
 class BoxScoreTraditionalRepository(CommonRepository):
@@ -14,11 +17,12 @@ class BoxScoreTraditionalRepository(CommonRepository):
         self.TABLE_NAME = BOX_SCORE_TRADITIONAL_TABLE_NAME
         self.team_name_repository = TeamNameRepository()
 
-        print(f"{self.__class__.__name__} initialized")
+        logger.info("%s initialized", self.__class__.__name__)
         try:
-            print("Box score traditional columns:", self.get_table_columns())
-        except Exception as e:
-            print("Error fetching table columns:", e)
+            logger.info("Box score traditional columns: %s",
+                        self.get_table_columns())
+        except duckdb.Error as e:
+            logger.error("Error fetching table columns: %s", e)
 
     def fetch_box_score_by_team_and_season(self, team_id: str = None, season: str = None) -> list[tuple]:
         team_id = self.team_name_repository.transform_team_id(team_id=team_id)
