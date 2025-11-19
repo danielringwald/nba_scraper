@@ -330,14 +330,14 @@ def _parse_minutes(x):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="NBA scraper script")
     parser.add_argument(
-        "season", help="NBA season to populate, e.g., '2023-24'")
+        "--season", help="NBA season to populate, e.g., '2023-24'")
 
     args = parser.parse_args()
 
-    if not re.match(r'^\d{4}-\d{2}$', args.season):
-        season_to_populate = Utils.get_current_season()
-    else:
+    if args.season and re.match(r'^\d{4}-\d{2}$', args.season):
         season_to_populate = args.season
+    else:
+        season_to_populate = Utils.get_current_season()
 
     connection = None
     try:
