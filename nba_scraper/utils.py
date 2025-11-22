@@ -146,12 +146,21 @@ class Utils:
 
     @staticmethod
     def to_list(val: T | list[T]) -> list[T]:
+        """
+            Converts a value to a list if it is not already a list.
 
+            Parameters
+            ----------
+            val: T | list[T]) 
+                The value to convert.
+
+            Returns
+            -------
+            list[T]
+                The converted list.
+        """
         if isinstance(val, list):
             return val
-        # TODO Remove this weird parse from str to int, the function is generic so the output should be as well???
-        if isinstance(val, str):
-            return [int(val)]
         return [val]
 
     @staticmethod
