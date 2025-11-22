@@ -1,6 +1,7 @@
 from nba_scraper.configuration.logging_config import init_logging
 from nba_scraper.dao.repository.season_games_repository import SeasonGamesRepository
 from nba_scraper.dao.repository.box_score_traditional_repository import BoxScoreTraditionalRepository
+from nba_scraper.dao.repository.team_name_repository import TeamNameRepository
 from fastapi import FastAPI, HTTPException, Query
 import logging
 
@@ -14,6 +15,7 @@ app = FastAPI(title="NBA Stats API", version="0.1")
 # Service / repository instance
 box_score_repo = BoxScoreTraditionalRepository()
 season_games_repo = SeasonGamesRepository()
+team_name_repository = TeamNameRepository()
 
 
 # REST endpoint equivalent to Spring @GetMapping("/boxscore")
@@ -22,6 +24,8 @@ def get_box_score(team_id: str, season: str = None):
     """
     Get box scores by team and season
     """
+    team_id = team_name_repository.transform_team_id(team_id=team_id)
+
     try:
         results = box_score_repo.fetch_box_score_by_team_and_season(
             team_id=team_id, season=season)
@@ -44,6 +48,8 @@ def get_all_box_scores_from_season(season: str):
 @app.get("/season/games/latest/")
 def get_n_latest_box_scores_by_team(team_id: str, annotate_winner: bool = Query(True), limit: int = 5):
     try:
+        team_id = team_name_repository.transform_team_id(team_id=team_id)
+
         results = season_games_repo.get_games_by_team(
             team_id=team_id, limit=limit)
 

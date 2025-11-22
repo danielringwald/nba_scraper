@@ -58,8 +58,6 @@ class BoxScoreTraditionalRepository(CommonRepository):
             logger.error("Error fetching table columns: %s", e)
 
     def fetch_box_score_by_team_and_season(self, team_id: str = None, season: str = None) -> list[tuple]:
-        team_id = self.team_name_repository.transform_team_id(team_id=team_id)
-
         if not season:
             season = Utils.get_current_season()
 
@@ -82,8 +80,6 @@ class BoxScoreTraditionalRepository(CommonRepository):
         return result or []
 
     def fetch_all_box_scores_for_team(self, team_id: str = None, limit: int = 5) -> list[tuple]:
-        team_id = self.team_name_repository.transform_team_id(team_id=team_id)
-
         where_parameters = {
             "OR": {"home_team_id": team_id, "away_team_id": team_id}}
         result = self._database_select_all(
