@@ -4,6 +4,29 @@ from nba_scraper.dao.repository.season_games_repository import SeasonGamesReposi
 from nba_scraper.dao.repository.box_score_traditional_repository import BoxScoreTraditionalRepository
 
 
+REGRESSION_FEATURES = [
+    "field_goals_made",
+    "field_goals_attempted",
+    "field_goals_percentage",
+    "three_pointers_made",
+    "three_pointers_attempted",
+    "three_pointers_percentage",
+    "free_throws_made",
+    "free_throws_attempted",
+    "free_throws_percentage",
+    "offensive_rebounds",
+    "defensive_rebounds",
+    "total_rebounds",
+    "assists",
+    "steals",
+    "blocks",
+    "turnovers",
+    "personal_fouls",
+    "points",
+    "plus_minus_points"
+]
+
+
 class LogisticRegressionAnalyzer:
 
     GRADIENT_DESCENT_ITERATIONS = 10000
@@ -55,28 +78,28 @@ class LogisticRegressionAnalyzer:
 
             for scores in self.box_score_traditional_repository.fetch_all_box_scores_for_game_id(
                     game_id=game['game_id']):
-                if scores[2] != team_id:
+                if scores["team_id"] != team_id:
                     continue  # Only consider the specified team's stats
 
-                field_goals_made += scores[7]
-                field_goals_attempted += scores[8]
-                field_goals_percentage += scores[9]
-                three_pointers_made += scores[10]
-                three_pointers_attempted += scores[11]
-                three_pointers_percentage += scores[12]
-                free_throws_made += scores[13]
-                free_throws_attempted += scores[14]
-                free_throws_percentage += scores[15]
-                offensive_rebounds += scores[16]
-                defensive_rebounds += scores[17]
-                total_rebounds += scores[18]
-                assists += scores[19]
-                steals += scores[20]
-                blocks += scores[21]
-                turnovers += scores[22]
-                personal_fouls += scores[23]
-                points += scores[24]
-                plus_minus_points += scores[25]
+                field_goals_made += scores["field_goals_made"]
+                field_goals_attempted += scores["field_goals_attempted"]
+                field_goals_percentage += scores["field_goals_percentage"]
+                three_pointers_made += scores["three_pointers_made"]
+                three_pointers_attempted += scores["three_pointers_attempted"]
+                three_pointers_percentage += scores["three_pointers_percentage"]
+                free_throws_made += scores["free_throws_made"]
+                free_throws_attempted += scores["free_throws_attempted"]
+                free_throws_percentage += scores["free_throws_percentage"]
+                offensive_rebounds += scores["offensive_rebounds"]
+                defensive_rebounds += scores["defensive_rebounds"]
+                total_rebounds += scores["total_rebounds"]
+                assists += scores["assists"]
+                steals += scores["steals"]
+                blocks += scores["blocks"]
+                turnovers += scores["turnovers"]
+                personal_fouls += scores["personal_fouls"]
+                points += scores["points"]
+                plus_minus_points += scores["plus_minus_points"]
 
             result_data.append({
                 "field_goals_made": field_goals_made,
@@ -103,26 +126,7 @@ class LogisticRegressionAnalyzer:
 
         df = pd.DataFrame(result_data)
 
-        X = df[["field_goals_made",
-                "field_goals_attempted",
-                "field_goals_percentage",
-                "three_pointers_made",
-                "three_pointers_attempted",
-                "three_pointers_percentage",
-                "free_throws_made",
-                "free_throws_attempted",
-                "free_throws_percentage",
-                "offensive_rebounds",
-                "defensive_rebounds",
-                "total_rebounds",
-                "assists",
-                "steals",
-                "blocks",
-                "turnovers",
-                "personal_fouls",
-                "points",
-                "plus_minus_points"
-                ]]
+        X = df[REGRESSION_FEATURES]
         y = df["winner"]
 
         X = np.c_[np.ones(X.shape[0]), X]  # adds a column of 1s
@@ -137,7 +141,10 @@ class LogisticRegressionAnalyzer:
             gradient = X.T @ (h - y.values.reshape(-1, 1)) / len(y)
             theta -= LogisticRegressionAnalyzer.LEARNING_RATE * gradient
 
-        print("Coefficients (θ):", theta)
+        print("Coefficients (θ):")
+        width = max(len(feature) for feature in REGRESSION_FEATURES)
+        for i, feature in enumerate(REGRESSION_FEATURES):
+            print(f"{feature:<{width}}   {theta[i][0]}")
 
 
 if __name__ == "__main__":

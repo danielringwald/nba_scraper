@@ -131,3 +131,13 @@ class CommonRepository(ABC):
             column_names = self.get_table_columns()
             return [dict(zip(column_names, row)) for row in result]
         return result
+
+    def _return_tuple_or_empty(self, result: tuple) -> tuple:
+        if not result:
+            return ()
+        return self._format_result(result)
+
+    def _return_list_or_empty(self, result: list[tuple]) -> list[tuple]:
+        if not result:
+            return []
+        return self._format_result(result)

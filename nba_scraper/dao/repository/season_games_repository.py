@@ -13,7 +13,7 @@ class SeasonGamesRepository(CommonRepository):
 
         logger.info("%s initialized", self.__class__.__name__)
 
-    def get_season_games(self, season: str, include_columns: bool = True) -> list[tuple]:
+    def get_season_games(self, season: str) -> list[tuple]:
         """
             DuckDB implementation of Python DB API specification, https://peps.python.org/pep-0249/, returns a tuple
             that is why we type hint the tuple list.
@@ -26,40 +26,24 @@ class SeasonGamesRepository(CommonRepository):
 
         result = self._database_select_all(where_clause_parameters)
 
-        # list is truthy so if empty it will be false
-        if not result:
-            logger.warning(
-                "No games found for season %s. Result: %s", season, result)
-            return []
+        return self._return_list_or_empty(result)
 
-        return self._format_result(result, include_columns=include_columns)
-
-    def get_single_game(self, game_id: str, include_columns: bool = True) -> tuple:
+    def get_single_game(self, game_id: str) -> tuple:
         where_clause_parameters = {"game_id": game_id}
 
         result = self._database_select_one(where_clause_parameters)
 
-        if not result:
-            logger.warning(
-                "No game found for game_id %s. Result: %s", game_id, result)
-            return ()
+        return self._return_tuple_or_empty(result)
 
-        return self._format_result(result, include_columns=include_columns)
-
-    def get_games_by_team(self, team_id: str, limit: int = 5, include_columns: bool = True) -> list[tuple] | list[dict[str, str]]:
+    def get_games_by_team(self, team_id: str, limit: int = 5) -> list[tuple] | list[dict[str, str]]:
         where_clause_parameters = {
             "OR": {"home_team_id": team_id, "away_team_id": team_id}}
         result = self._database_select_all(
             where_clause_parameter_map=where_clause_parameters)[0:limit]
 
-        if not result:
-            logger.warning(
-                "No games found for team_id %s. Result: %s", team_id, result)
-            return []
-
-        response = self._format_result(result, include_columns=include_columns)
+        formatted_result = self._return_list_or_empty(result)
 
         # Sort the list by date descending, HARD dependency on included columns being true
-        response.sort(key=lambda x: x['date'], reverse=True)
+        formatted_result.sort(key=lambda x: x['date'], reverse=True)
 
-        return response
+        return formatted_result

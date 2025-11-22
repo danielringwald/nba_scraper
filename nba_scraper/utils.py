@@ -94,8 +94,8 @@ class Utils:
         return csv_files
 
     @staticmethod
-    @functools.lru_cache(maxsize=1000)
     @DeprecationWarning
+    @functools.lru_cache(maxsize=1000)
     def get_csv_files_from_directory_containing_substring(substring: str, directory=".") -> list[str]:
         """Returns a list of all .csv files in the specified directory that contain {substring}."""
 
