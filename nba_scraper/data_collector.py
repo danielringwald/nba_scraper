@@ -12,6 +12,7 @@ WINNER = "winner=Oscar"
 TEAM = "Team"
 
 
+@DeprecationWarning
 def get_nba_data_by_year_and_directory(year, directory=".", playoff=False) -> pd.DataFrame:
     csv_data_files = Utils.get_csv_files_from_directory_containing_substring(
         str(year), directory)
