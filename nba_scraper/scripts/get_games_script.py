@@ -20,7 +20,7 @@ def redirect_to_game_website(game_id: str) -> None:
     base_url = "https://www.nba.com/game/"
 
     game = season_games_repo.get_single_game(
-        game_id=game_id, include_columns=False)
+        game_id=game_id)
     if not game:
         logger.info("No game found with game_id: %s", game_id)
         return

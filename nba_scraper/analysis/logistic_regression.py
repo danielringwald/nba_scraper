@@ -144,7 +144,11 @@ class LogisticRegressionAnalyzer:
         print("Coefficients (θ):")
         width = max(len(feature) for feature in REGRESSION_FEATURES)
         for i, feature in enumerate(REGRESSION_FEATURES):
-            print(f"{feature:<{width}}   {theta[i][0]}")
+            val = theta[i][0]
+            if val > 0:
+                print(f"{feature:<{width}} +{val:.4f}")
+            else:
+                print(f"{feature:<{width}} {val:.4f}")
 
 
 if __name__ == "__main__":

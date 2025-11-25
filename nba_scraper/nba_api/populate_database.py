@@ -156,8 +156,8 @@ class PopulateDatabase:
                 f"Table {table_name} already populated for season {season}, skipping population.")
             return
 
-        pre_persisted_game_ids = [season_game[0] for season_game in self.sgd.get_season_games(
-            season=season, include_columns=False)]
+        pre_persisted_game_ids = [season_game["game_id"] for season_game in self.sgd.get_season_games(
+            season=season)]
 
         # Filter out already persisted games
         season_games_subset = season_games_subset[
@@ -193,22 +193,22 @@ class PopulateDatabase:
 
         self.perform_create_box_score_table(table_name=table_name)
 
-        season_game_ids = self.sgd.get_season_games(
-            season=season, include_columns=False)
+        season_game_ids = self.sgd.get_season_games(season=season)
 
         if not overwrite_all_entries:
             # Make into set to get unique game_ids
-            current_persisted_game_ids = set([game_id for (
-                game_id, *_) in self.bstr.fetch_all_box_scores_from_season(season=season)])
+            current_persisted_game_ids = set([box_score["game_id"] for
+                                              box_score in self.bstr.fetch_all_box_scores_from_season(season=season)])
 
             print(
                 f"{len(current_persisted_game_ids)} box scores out of {len(season_game_ids)} already saved in the database.")
 
             # Filter out the game_ids that are already persisted
             season_game_ids = [
-                box_score for box_score in season_game_ids if box_score[0] not in current_persisted_game_ids]
+                box_score for box_score in season_game_ids if box_score["game_id"] not in current_persisted_game_ids]
 
-        for i, (game_id, *_) in enumerate(season_game_ids):
+        for i, box_score in enumerate(season_game_ids):
+            game_id = box_score["game_id"]
             logger.info("Attempting to persist %s", game_id)
 
             try:
