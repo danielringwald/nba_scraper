@@ -6,6 +6,9 @@ logger = logging.getLogger(__name__)
 
 
 class SeasonGamesRepository(CommonRepository):
+    """
+        Repository class for season games data access
+    """
 
     def __init__(self):
         super().__init__()
@@ -29,6 +32,10 @@ class SeasonGamesRepository(CommonRepository):
         return self._return_list_or_empty(result)
 
     def get_single_game(self, game_id: str) -> tuple:
+        """
+            Get a single game by its game_id
+        """
+
         where_clause_parameters = {"game_id": game_id}
 
         result = self._database_select_one(where_clause_parameters)
@@ -36,14 +43,19 @@ class SeasonGamesRepository(CommonRepository):
         return self._return_tuple_or_empty(result)
 
     def get_games_by_team(self, team_id: str, limit: int = 5) -> list[tuple] | list[dict[str, str]]:
+        """
+            Get all the games for the specified team (both home and away)
+        """
+
         where_clause_parameters = {
             "OR": {"home_team_id": team_id, "away_team_id": team_id}}
+
         result = self._database_select_all(
             where_clause_parameter_map=where_clause_parameters)[0:limit]
 
         formatted_result = self._return_list_or_empty(result)
 
-        # Sort the list by date descending, HARD dependency on included columns being true
+        # Sort the list by date descending
         formatted_result.sort(key=lambda x: x['date'], reverse=True)
 
         return formatted_result

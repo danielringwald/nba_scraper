@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from nba_scraper.dao.repository.season_games_repository import SeasonGamesRepository
 from nba_scraper.dao.repository.box_score_traditional_repository import BoxScoreTraditionalRepository
+from nba_scraper.season_games.season_games_util import SeasonGamesUtil
 
 
 REGRESSION_FEATURES = [
@@ -39,22 +40,11 @@ class LogisticRegressionAnalyzer:
     def prepare_data_for_logistic_regression(self, team_id: str) -> pd.DataFrame:
         results = self.season_games_repository.get_games_by_team(
             team_id=team_id, limit=200)
+        results = SeasonGamesUtil.append_winner_column(
+            results, team_id=team_id)
 
         result_data = []
         for game in results:
-            home_score = game['home_team_score']
-            away_score = game['away_team_score']
-
-            if home_score > away_score:
-                if game["home_team_id"] == team_id:
-                    game['winner'] = 1
-                else:
-                    game['winner'] = 0
-            else:
-                if game["away_team_id"] == team_id:
-                    game['winner'] = 1
-                else:
-                    game['winner'] = 0
 
             field_goals_made = 0
             field_goals_attempted = 0

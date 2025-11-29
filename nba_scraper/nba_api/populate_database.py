@@ -42,13 +42,13 @@ class PopulateDatabase:
                     season=season)
                 break
             except ValueError as e:
-                print(
-                    f"Attempt {attempt + 1} of {tries} failed with error: {e}")
+                logger.warning(
+                    "Attempt %s of %s failed with error: %s", attempt + 1, tries, e)
                 if attempt < tries - 1:
-                    print("Retrying...")
+                    logger.warning("Retrying...")
                     sleep(5)
                 else:
-                    print("All attempts failed.")
+                    logger.error("All attempts failed.")
 
     def populate_teams_information_datebase(self):
         table_name = TEAM_NAME_INFORMATION_TABLE_NAME
@@ -87,7 +87,7 @@ class PopulateDatabase:
             self.con.register("dataframe_to_insert", df)
             self.con.execute(
                 f"INSERT INTO {table_name} SELECT * FROM dataframe_to_insert")
-            print("Inserted team:", team_name)
+            logger.info("Inserted team: %s", team_name)
 
     def perform_create_teams_information_table(self, table_name: str):
         self.con.execute(f"""
@@ -97,7 +97,7 @@ class PopulateDatabase:
                 team_name TEXT
             )
             """)
-        print(f"Table {table_name} created successfully")
+        logger.info("Table %s created successfully", table_name)
 
     # Games Schedule
 
@@ -152,8 +152,8 @@ class PopulateDatabase:
 
         # Check if already populated, by doing this we save running DB inserts
         if self.con.execute(f"SELECT COUNT(*) FROM {table_name} WHERE season = '{season}'").fetchone()[0] == season_games_subset.shape[0]:
-            print(
-                f"Table {table_name} already populated for season {season}, skipping population.")
+            logger.info(
+                "Table %s already populated for season %s, skipping population.", table_name, season)
             return
 
         pre_persisted_game_ids = [season_game["game_id"] for season_game in self.sgd.get_season_games(
@@ -168,7 +168,7 @@ class PopulateDatabase:
 
         self.con.execute(
             f"INSERT INTO {table_name} SELECT * FROM season_games_subset")
-        print(f"Inserted season games for season {season}")
+        logger.info("Inserted season games for season %s", season)
 
     def perform_create_season_games_table(self, table_name: str):
         self.con.execute(f"""
