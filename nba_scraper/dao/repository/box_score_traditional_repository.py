@@ -69,7 +69,7 @@ class BoxScoreTraditionalRepository(CommonRepository):
 
         return self._return_list_or_empty(result)
 
-    def fetch_all_box_scores_from_season(self, season: str = None) -> list[tuple]:
+    def fetch_all_box_scores_from_season(self, season: str = None) -> list[tuple] | list[dict[str, str]]:
         # Validation
         self._validate_season_format(season)
 

@@ -137,7 +137,7 @@ class CommonRepository(ABC):
             return ()
         return self._format_result(result)
 
-    def _return_list_or_empty(self, result: list[tuple]) -> list[tuple]:
+    def _return_list_or_empty(self, result: list[tuple]) -> list[tuple] | list[dict[str, str]]:
         if not result:
             return []
         return self._format_result(result)
