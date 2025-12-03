@@ -1,5 +1,4 @@
 import pandas as pd
-from nba_scraper.season_games.season_games_util import SeasonGamesUtil
 from nba_scraper.dao.repository.box_score_traditional_repository import (
     BoxScoreTraditionalRepository
 )
@@ -9,7 +8,7 @@ from nba_scraper.configuration.database_config import (
     SeasonGamesColumn as sgc
 )
 
-WINNER_COLUMN = "winner"
+HOME_WINNER_COLUMN = "home_team_wins"
 
 
 class DataLoader:
@@ -25,18 +24,25 @@ class DataLoader:
 
     def feature_engineer(self, df: pd.DataFrame) -> pd.DataFrame:
         df = df.copy()
+
+        # 1. Append winner column
+        df[HOME_WINNER_COLUMN] = (df[sgc.HOME_TEAM_SCORE]
+                                  > df[sgc.AWAY_TEAM_SCORE]).astype(int)
+
+        # 2. Clean numeric columns
         numeric_cols = [
             sgc.HOME_TEAM_SCORE,
-            sgc.HOME_TEAM_ID,
-            sgc.AWAY_TEAM_SCORE,
-            sgc.AWAY_TEAM_ID
+            sgc.AWAY_TEAM_SCORE
         ]
-
-        df = SeasonGamesUtil.append_winner_column(df)
-
         for col in numeric_cols:
             if col in df.columns:
                 df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
+
+        # 3. One-hot encode the away and home teams
+        team_id_cols = [sgc.HOME_TEAM_ABBREVIATION, sgc.AWAY_TEAM_ABBREVIATION]
+        home_away_prefixes = ['HOME', 'AWAY']
+        df = pd.get_dummies(df, columns=team_id_cols,
+                            prefix=home_away_prefixes, prefix_sep='_')
 
         return df
 
@@ -44,4 +50,5 @@ class DataLoader:
 if __name__ == "__main__":
     loader = DataLoader()
     season_df = loader.extract_season("2023-24")
-    print(season_df.head())
+    feature_engineered_df = loader.feature_engineer(season_df)
+    print(feature_engineered_df[HOME_WINNER_COLUMN].head())

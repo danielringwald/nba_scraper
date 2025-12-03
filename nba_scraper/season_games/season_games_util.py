@@ -1,4 +1,8 @@
+import pandas as pd
 from nba_scraper.utils import Utils
+from nba_scraper.configuration.database_config import SeasonGamesColumn as sgc
+
+WINNER_COLUMN = "winner"
 
 
 class SeasonGamesUtil:
@@ -16,24 +20,24 @@ class SeasonGamesUtil:
 
         if team_id:
             for game in season_games:
-                home_score = game["home_team_score"]
-                away_score = game["away_team_score"]
+                home_score = game[sgc.HOME_TEAM_SCORE]
+                away_score = game[sgc.AWAY_TEAM_SCORE]
 
                 if home_score > away_score:
-                    if game["home_team_id"] == team_id:
-                        game['winner'] = 1
+                    if game[sgc.HOME_TEAM_ID] == team_id:
+                        game[WINNER_COLUMN] = 1
                     else:
-                        game['winner'] = 0
+                        game[WINNER_COLUMN] = 0
                 else:
-                    if game["away_team_id"] == team_id:
-                        game['winner'] = 1
+                    if game[sgc.AWAY_TEAM_ID] == team_id:
+                        game[WINNER_COLUMN] = 1
                     else:
-                        game['winner'] = 0
+                        game[WINNER_COLUMN] = 0
             return season_games
 
         for game in season_games:
-            if game["home_team_score"] > game["away_team_score"]:
-                game["winner"] = game["home_team_id"]
+            if game[sgc.HOME_TEAM_SCORE] > game[sgc.AWAY_TEAM_SCORE]:
+                game[WINNER_COLUMN] = game[sgc.HOME_TEAM_ID]
             else:
-                game["winner"] = game["away_team_id"]
+                game[WINNER_COLUMN] = game[sgc.AWAY_TEAM_ID]
         return season_games
