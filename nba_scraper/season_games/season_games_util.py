@@ -7,7 +7,9 @@ class SeasonGamesUtil:
     def append_winner_column(season_games: dict[str, str] | list[dict[str, str]], team_id: str = None) -> list[dict[str, str]]:
         """
             Append a 'winner' column to the season games data, indicating the winning team_id
+
             If team_id is provided, the 'winner' column will be 1 if the specified team won, else 0
+            If team_id is NOT provided, the 'winner' column will contain the winning team_id
         """
 
         season_games = Utils.to_list(season_games)

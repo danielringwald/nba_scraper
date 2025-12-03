@@ -30,6 +30,10 @@ class TeamNameRepository(CommonRepository):
 
         return self._database_select_one(where_clause_paramteres)
 
+    def get_all_teams_information(self) -> list[dict[str | str]]:
+        result = self._database_select_all()
+        return self._return_list_or_empty(result)
+
     def _create_where_clause_from_team_id(self, team_id: str | int) -> dict[str, str | int]:
         if re.match(r'^[A-Z]{3}$', str(team_id)):
             return {"team_abbreviation": team_id}
@@ -40,6 +44,9 @@ class TeamNameRepository(CommonRepository):
                 "Invalid team_id format. Must be a 3-letter abbreviation or a 10-digit team ID.")
 
     def transform_team_id(self, team_id: str) -> str:
+        """
+            Converts team abbreviation to team ID (10 digit) or team Id to team abbreviation.
+        """
         if not team_id:
             raise ValueError("Must provide a valid team_id")
 
