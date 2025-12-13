@@ -1,4 +1,3 @@
-import pandas as pd
 from nba_scraper.utils import Utils
 from nba_scraper.configuration.database_config import SeasonGamesColumn as sgc
 
