@@ -15,3 +15,17 @@ MODEL_CONFIGS = {
         "preprocess_fn": "preprocess_for_score",
     }
 }
+
+class LastNGamesFeatures:
+    
+    WINNER = "winner"
+    
+    DATE_DAY = "day"
+    DATE_MONTH = "month"
+    DATE_YEAR = "year"
+    
+    HOME_TEAM = "home_team" # Boolean field
+    AWAY_TEAM = "away_team" # Boolean field
+    
+    NTH_GAME_PREFIX = "WON_LAST_GAME_"  
+    """ Should be like "WON_LAST_GAME_X" where X is the number"""
