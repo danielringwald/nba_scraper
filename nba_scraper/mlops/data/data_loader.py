@@ -1,14 +1,21 @@
 import datetime
+import logging
 import pandas as pd
 from nba_scraper.dao.repository.box_score_traditional_repository import (
     BoxScoreTraditionalRepository
 )
 from nba_scraper.dao.repository.season_games_repository import SeasonGamesRepository
+from nba_scraper.dao.repository.team_name_repository import TeamNameRepository
 from nba_scraper.configuration.database_config import (
     # BoxScoreTraditionalColumn as bstc,
-    SeasonGamesColumn as sgc
+    SeasonGamesColumn as sgc,
+    TeamInformationColumn as tic
 )
 from nba_scraper.mlops.pipeline.config import LastNGamesFeatures as lngf
+
+from nba_scraper.configuration.logging_config import init_logging
+init_logging()
+logger = logging.getLogger(__name__)
 
 HOME_WINNER_COLUMN = "home_team_wins"
 HOME_AWAY_PREFIXES = ['HOME', 'AWAY']
@@ -20,6 +27,7 @@ class DataLoader:
     def __init__(self):
         self.box_score_traditional_repo = BoxScoreTraditionalRepository()
         self.season_games_repo = SeasonGamesRepository()
+        self.team_name_repo = TeamNameRepository()
 
     def extract_season(self, season: str) -> pd.DataFrame:
         rows = self.season_games_repo.get_season_games(season=season)
@@ -47,58 +55,77 @@ class DataLoader:
 
         return df
 
-    def feature_engineer_last_n_winner(self, df: pd.DataFrame, n_games: int = 5) -> pd.DataFrame:
-        df = df.copy()
+    def feature_engineer_last_n_winner(self, df: pd.DataFrame, input_n_games: int = 5) -> pd.DataFrame:
+        df: pd.DataFrame = df.copy()
 
         # 1. Append winner column
         df = self._append_season_game_home_winner_df(df)
+        logger.info("Winner column appended")
 
         # 2. For all teams, for each last n_games games, check the outcome of the next
-        team_abbreviation = "CLE"
+        dict_rows_for_df = []
 
-        sub_df = df.loc[
-            (df[sgc.HOME_TEAM_ABBREVIATION] == team_abbreviation) | (
-                df[sgc.AWAY_TEAM_ABBREVIATION] == team_abbreviation)
-        ].sort_values(sgc.DATE, ascending=True)
+        for team_name_information in self.team_name_repo.get_all_teams_information():
+            team_abbreviation = team_name_information[tic.TEAM_ABBREVIATION]
+            logger.debug("Processing team: %s", team_abbreviation)
 
-        for i in range(n_games, len(sub_df)):
-            current_game = sub_df.iloc[n_games]
-            last_n_games = sub_df.iloc[i - n_games: n_games]
+            sub_df: pd.DataFrame = df.loc[
+                (df[sgc.HOME_TEAM_ABBREVIATION] == team_abbreviation) | (
+                    df[sgc.AWAY_TEAM_ABBREVIATION] == team_abbreviation)
+            ].sort_values(sgc.DATE, ascending=True)
 
-            print(current_game)
-            print(last_n_games[[sgc.DATE, sgc.HOME_TEAM_ABBREVIATION,
-                  sgc.HOME_TEAM_SCORE, sgc.AWAY_TEAM_ABBREVIATION, sgc.AWAY_TEAM_SCORE]])
+            n_games = min(input_n_games, len(sub_df) - 1)
 
-            row = {}
-            row[lngf.WINNER] = int((current_game[HOME_WINNER_COLUMN] == 1 and current_game[sgc.HOME_TEAM_ABBREVIATION] == team_abbreviation) or
-                                   (current_game[HOME_WINNER_COLUMN] == 0 and current_game[sgc.AWAY_TEAM_ABBREVIATION] == team_abbreviation))
-            row[lngf.DATE_DAY] = datetime.date.fromisoformat(
-                str(current_game[sgc.DATE])).day
-            row[lngf.DATE_MONTH] = datetime.date.fromisoformat(
-                str(current_game[sgc.DATE])).month
-            row[lngf.DATE_YEAR] = datetime.date.fromisoformat(
-                str(current_game[sgc.DATE])).year
+            for game_idx in range(n_games, len(sub_df)):
 
-            for i in range(n_games):
-                n_game = last_n_games.iloc[n_games - i - 1]
-                row[lngf.NTH_GAME_PREFIX + str(i + 1)] = int((n_game[HOME_WINNER_COLUMN] == 1 and n_game[sgc.HOME_TEAM_ABBREVIATION] == team_abbreviation) or
-                                                             (n_game[HOME_WINNER_COLUMN] == 0 and n_game[sgc.AWAY_TEAM_ABBREVIATION] == team_abbreviation))
+                # This will be the game to predict
+                current_game = sub_df.iloc[game_idx]
+                # These are the last n games played
+                last_n_games = sub_df.iloc[game_idx - n_games: game_idx]
 
-            print(pd.DataFrame(row, index=[
-                  team_abbreviation + str(current_game[sgc.DATE])]))
-            return pd.DataFrame()
+                row = {}
+                row[lngf.WINNER] = self._if_team_is_winner(
+                    current_game, team_abbreviation)
+                row[lngf.DATE_DAY] = datetime.date.fromisoformat(
+                    str(current_game[sgc.DATE])).day
+                row[lngf.DATE_MONTH] = datetime.date.fromisoformat(
+                    str(current_game[sgc.DATE])).month
+                row[lngf.DATE_YEAR] = datetime.date.fromisoformat(
+                    str(current_game[sgc.DATE])).year
 
-        return df
+                for game_offset in range(n_games):
+                    n_game = last_n_games.iloc[n_games - game_offset - 1]
+                    row[lngf.NTH_GAME_PREFIX +
+                        str(game_offset + 1)] = self._if_team_is_winner(n_game, team_abbreviation)
+
+                row[lngf.ROLLING_WIN_RATE] = self._get_number_of_wins(
+                    row) / n_games
+
+                dict_rows_for_df.append(row)
+
+        logger.info("Feature engineering for last %d games completed", n_games)
+
+        return pd.DataFrame(dict_rows_for_df)
 
     def _append_season_game_home_winner_df(self, df: pd.DataFrame) -> pd.DataFrame:
         df[HOME_WINNER_COLUMN] = (df[sgc.HOME_TEAM_SCORE]
                                   > df[sgc.AWAY_TEAM_SCORE]).astype(int)
-
         return df
+
+    def _if_team_is_winner(self, game: pd.Series, team_abbreviation: str) -> int:
+        if game[sgc.HOME_TEAM_ABBREVIATION] == team_abbreviation:
+            return int(game[HOME_WINNER_COLUMN] == 1)
+        return int(game[HOME_WINNER_COLUMN] == 0)
+
+    def _get_number_of_wins(self, row: dict) -> int:
+        get_winner_keys = [
+            key for key in row.keys() if key.startswith(lngf.NTH_GAME_PREFIX)
+        ]
+        return sum(row[key] for key in get_winner_keys)
 
 
 if __name__ == "__main__":
     loader = DataLoader()
     season_df = loader.extract_season("2025-26")
     feature_engineered_df = loader.feature_engineer_last_n_winner(season_df)
-    # print(feature_engineered_df[HOME_WINNER_COLUMN].head())
+    logger.info(feature_engineered_df.head())
