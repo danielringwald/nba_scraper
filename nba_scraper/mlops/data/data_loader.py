@@ -87,20 +87,22 @@ class DataLoader:
                 row = {}
                 row[lngf.WINNER] = self._if_team_is_winner(
                     current_game, team_abbreviation)
-                row[lngf.DATE_DAY] = datetime.date.fromisoformat(
-                    str(current_game[sgc.DATE])).day
-                row[lngf.DATE_MONTH] = datetime.date.fromisoformat(
-                    str(current_game[sgc.DATE])).month
-                row[lngf.DATE_YEAR] = datetime.date.fromisoformat(
-                    str(current_game[sgc.DATE])).year
+
+                date: pd.Timestamp = pd.to_datetime(current_game[sgc.DATE])
+                row[lngf.DATE_DAY] = date.day
+                row[lngf.DATE_MONTH] = date.month
+                row[lngf.DATE_YEAR] = date.year
 
                 for game_offset in range(n_games):
                     n_game = last_n_games.iloc[n_games - game_offset - 1]
                     row[lngf.NTH_GAME_PREFIX +
                         str(game_offset + 1)] = self._if_team_is_winner(n_game, team_abbreviation)
 
-                row[lngf.ROLLING_WIN_RATE] = self._get_number_of_wins(
-                    row) / n_games
+                wins = [
+                    self._if_team_is_winner(game, team_abbreviation)
+                    for _, game in last_n_games.iterrows()
+                ]
+                row[lngf.ROLLING_WIN_RATE] = sum(wins) / n_games
 
                 dict_rows_for_df.append(row)
 
