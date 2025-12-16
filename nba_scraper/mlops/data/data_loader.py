@@ -34,7 +34,7 @@ class DataLoader:
         return pd.DataFrame(rows)
 
     def feature_engineer(self, df: pd.DataFrame) -> pd.DataFrame:
-        df = df.copy()
+        """df = df.copy()
 
         # 1. Append winner column
         df = self._append_season_game_home_winner_df(df)
@@ -53,10 +53,11 @@ class DataLoader:
         df = pd.get_dummies(df, columns=team_id_cols,
                             prefix=HOME_AWAY_PREFIXES, prefix_sep='_')
 
-        return df
+        return df"""
+        raise NotImplementedError("feature_engineering() is not yet implemented")
 
-    def feature_engineer_last_n_winner(self, df: pd.DataFrame, input_n_games: int = 5) -> pd.DataFrame:
-        df: pd.DataFrame = df.copy()
+    def feature_engineer_last_n_winner(self, input_df: pd.DataFrame, input_n_games: int = 5) -> pd.DataFrame:
+        df: pd.DataFrame = input_df.copy()
 
         # 1. Append winner column
         df = self._append_season_game_home_winner_df(df)
@@ -106,6 +107,22 @@ class DataLoader:
         logger.info("Feature engineering for last %d games completed", n_games)
 
         return pd.DataFrame(dict_rows_for_df)
+    
+    def load_last_n_games_dataset(
+        self,
+        season: str,
+        n_games: int = 5,
+        target_col: str = lngf.WINNER,
+    ) -> tuple[pd.DataFrame, pd.Series]:
+
+        df = self.extract_season(season)
+        df = self.feature_engineer_last_n_winner(df, input_n_games=n_games)
+
+        features = df.drop(columns=[target_col])
+        targets = df[target_col]
+
+        return features, targets
+
 
     def _append_season_game_home_winner_df(self, df: pd.DataFrame) -> pd.DataFrame:
         df[HOME_WINNER_COLUMN] = (df[sgc.HOME_TEAM_SCORE]

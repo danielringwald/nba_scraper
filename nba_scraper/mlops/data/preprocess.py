@@ -26,12 +26,13 @@ class Preprocess:
             features.columns
         )
 
-    def _build_column_transformer(self):
+    def _build_column_transformer(self, numeric_scaler_cls = StandardScaler):
         self.column_transformer = ColumnTransformer(
             transformers=[
-                ("num", StandardScaler(), self.numeric_features),
+                ("num", "passthrough", self.numeric_features),
                 ("bin", "passthrough", self.binary_features),
-            ]
+            ],
+            remainder="drop"
         )
 
     # ---------- public API ----------
