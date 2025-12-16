@@ -25,8 +25,8 @@ class LastNGamesFeatures:
     DATE_MONTH = "month"
     DATE_YEAR = "year"
 
-    HOME_TEAM = "home_team"  # Boolean field
-    AWAY_TEAM = "away_team"  # Boolean field
+    HOME_TEAM = None # "home_team", Boolean field, not implemented yet
+    AWAY_TEAM = None # "away_team", Boolean field, not implemented yet
 
     NTH_GAME_PREFIX = "WON_LAST_GAME_"
     """ Should be like "WON_LAST_GAME_X" where X is the number"""
