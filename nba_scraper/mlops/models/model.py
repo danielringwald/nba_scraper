@@ -9,3 +9,12 @@ def build_model():
         n_jobs=-1,
         class_weight="balanced",
     )
+
+MODEL_REGISTRY = {
+    "RandomForestClassifier": lambda params: RandomForestClassifier(
+        random_state=42,
+        n_jobs=-1,
+        **params
+    ),
+}
+

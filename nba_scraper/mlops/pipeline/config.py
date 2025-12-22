@@ -1,9 +1,9 @@
 MODEL_CONFIGS = {
-    "win_model": {
+    "last_n_games_random_forest": {
         "target": "won_game",
         "features": ["avg_pts_last5", "avg_reb_last5", "win_rate_last5"],
         "model_class": "RandomForestClassifier",
-        "params": {"n_estimators": 200},
+        "model_params": {"n_estimators": 200},
         "preprocess_fn": "preprocess_for_win",
     },
 
@@ -11,7 +11,7 @@ MODEL_CONFIGS = {
         "target": "points_team",
         "features": ["avg_pts_last5", "pace_last5"],
         "model_class": "XGBRegressor",
-        "params": {"max_depth": 5},
+        "model_params": {"max_depth": 5},
         "preprocess_fn": "preprocess_for_score",
     }
 }
