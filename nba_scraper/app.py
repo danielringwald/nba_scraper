@@ -28,7 +28,15 @@ def setup_logging():
 
 
 if __name__ == "__main__":
+<<<<<<< Updated upstream
     setup_logging()
 
     logging.info("Starting NBA Scraper Dashboard")
     app.run(debug=True)
+||||||| Stash base
+    print(os.getcwd())
+    app.run(debug=False)
+=======
+    print(os.getcwd())
+    app.run(debug=True)
+>>>>>>> Stashed changes

@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 import functools
 from typing import Union
 import logging
@@ -5,23 +6,60 @@ import os
 import pandas as pd
 from nba_scraper.dao.csv_dao.csv_common_dao import CSVCommonDAO
 from nba_scraper.configuration.box_score import TOTAL_BOX_SCORES_PATH
+||||||| Stash base
+from .csv_common_dao import CSVCommonDAO
+import pandas as pd
+from utils import Utils
+from typing import Union, List
+=======
+from typing import Union, List
+from nba_scraper.dao.csv_dao.csv_common_dao import CSVCommonDAO
+from nba_scraper.utils import Utils
+>>>>>>> Stashed changes
 from nba_scraper.models.game_box_score import GameBoxScore
+<<<<<<< Updated upstream
 from nba_scraper.utils import Utils
 from nba_scraper.mappers.box_score_mapper import BoxScoreMapper
 from nba_scraper.dao.csv_dao.csv_dao_helper import CSVDAOHelper
 
+||||||| Stash base
+from .csv_dao_helper import CSVDAOHelper
+=======
+import pandas as pd
+
+>>>>>>> Stashed changes
 
 class CSVBoxScoreDAO(CSVCommonDAO):
 
+<<<<<<< Updated upstream
     directory = TOTAL_BOX_SCORES_PATH
 
     @classmethod
     @functools.lru_cache(maxsize=1000)
     def get_by_id(cls, item_id: str) -> GameBoxScore:
+||||||| Stash base
+    def __init__(self, directory: str):
+        super().__init__(directory)
+        
+    def get_by_id(self, id: str) -> pd.DataFrame:
+=======
+    def __init__(self, directory: str):
+        super().__init__(directory)
+
+    def get_by_id(self, id: str) -> pd.DataFrame:
+>>>>>>> Stashed changes
         """
+<<<<<<< Updated upstream
             Return the game box score by ID where ID is 
             on the form YYYYMMDD0<TEAM INITIALS>_<@ TEAM INITIALS>
 
+||||||| Stash base
+            Return the game box score by ID where ID is on the form YYYYMMDD0<TEAM INITIALS>_<@ TEAM INITIALS>
+        
+=======
+            Return the game box score by ID where ID is on the form YYYYMMDD0<TEAM INITIALS>_<@ TEAM INITIALS>
+
+>>>>>>> Stashed changes
             Args:
                 season (int or list of int): A single season year or a list of season years.
                 team (str): The team name.
@@ -29,11 +67,21 @@ class CSVBoxScoreDAO(CSVCommonDAO):
             Returns:
                 pd.DataFrame: The box score data for the specified game.
         """
+<<<<<<< Updated upstream
         path = os.path.join(cls.directory, item_id + ".csv")
         return BoxScoreMapper.map_df_to_box_score_game(item_id, pd.read_csv(path))
 
     @classmethod
     def get_by_team_and_season(cls, team: str, season: Union[int, list[int], str]) -> list[GameBoxScore]:
+||||||| Stash base
+        return pd.read_csv(self.directory + id + ".csv")
+    
+    def get_by_team_and_season(self, team: str, season: Union[int, List[int]]) -> List[GameBoxScore]:
+=======
+        return pd.read_csv(self.directory + id + ".csv")
+
+    def get_by_team_and_season(self, team: str, season: Union[int, List[int]]) -> List[GameBoxScore]:
+>>>>>>> Stashed changes
         """
             Returns all games by a team during a season
 
@@ -45,6 +93,7 @@ class CSVBoxScoreDAO(CSVCommonDAO):
                 list[GameBoxScore]: A list of GameBoxScore objects 
                     for the specified team and season.
         """
+<<<<<<< Updated upstream
         season_years = Utils.to_list(season)
 
         game_ids = [
@@ -122,3 +171,16 @@ class CSVBoxScoreDAO(CSVCommonDAO):
         """
         game_ids = CSVDAOHelper.get_box_score_ids_by_season(date)
         return [cls.get_by_id(game_id) for game_id in game_ids if game_id.startswith(f"{date}0{home_team}")]
+||||||| Stash base
+        seasons = Utils.to_list(season)
+        
+        Utils.get_csv_files_from_directory_and_season()
+        
+        return [GameBoxScore()]
+=======
+        seasons = Utils.to_list(season)
+
+        Utils.get_csv_files_from_directory_and_season()
+
+        return [GameBoxScore()]
+>>>>>>> Stashed changes
