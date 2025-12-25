@@ -5,6 +5,8 @@ from nba_scraper.mlops.data.data_loader import DataLoader
 from nba_scraper.mlops.data.preprocess import Preprocess
 from nba_scraper.mlops.models.model import build_model
 from nba_scraper.mlops.models.model_eval import evaluate
+from nba_scraper.mlops.models.model import MODEL_REGISTRY
+from nba_scraper.mlops.pipeline.config import MODEL_CONFIGS
 from sklearn.model_selection import train_test_split
 
 ARTIFACT_DIR = Path(os.path.join(os.path.dirname(__file__), "..", "results/artifacts"))
@@ -14,7 +16,7 @@ PREPROCESS_PATH = ARTIFACT_DIR / "preprocess.joblib"
 
 def run(
     season: str = "2025-26",
-    n_games: int = 5,
+    n_games: int = 3,
     test_size: float = 0.2,
     random_state: int = 42,
 ):
@@ -40,7 +42,8 @@ def run(
     X_val_t = preprocess.transform(X_val)
 
     # 4. Train model
-    model = build_model()
+    model_config = MODEL_CONFIGS["last_n_games_random_forest"]
+    model = MODEL_REGISTRY[model_config["model_class"]](model_config["model_params"])
     model.fit(X_train_t, y_train)
 
     # 5. Evaluate
