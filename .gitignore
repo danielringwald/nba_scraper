@@ -17,4 +17,4 @@ clonecmd.bat
 db_backups/*
 
 # ML Ops
-# /nba_scraper/mlops/results/artifacts/*
+/nba_scraper/mlops/results/artifacts/*

@@ -132,7 +132,7 @@ class CommonRepository(ABC):
             return [dict(zip(column_names, row)) for row in result]
         return result
 
-    def _return_tuple_or_empty(self, result: tuple) -> tuple:
+    def _return_tuple_or_empty(self, result: tuple | None) -> tuple:
         if not result:
             return ()
         return self._format_result(result)

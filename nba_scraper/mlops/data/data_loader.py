@@ -1,4 +1,3 @@
-import datetime
 import logging
 import pandas as pd
 from nba_scraper.dao.repository.box_score_traditional_repository import (
@@ -56,7 +55,7 @@ class DataLoader:
         return df"""
         raise NotImplementedError("feature_engineering() is not yet implemented")
 
-    def feature_engineer_last_n_winner(self, input_df: pd.DataFrame, input_n_games: int = 5) -> pd.DataFrame:
+    def _feature_engineer_last_n_winner(self, input_df: pd.DataFrame, input_n_games: int = 5) -> pd.DataFrame:
         df: pd.DataFrame = input_df.copy()
 
         # 1. Append winner column
@@ -118,7 +117,7 @@ class DataLoader:
     ) -> tuple[pd.DataFrame, pd.Series]:
 
         df = self.extract_season(season)
-        df = self.feature_engineer_last_n_winner(df, input_n_games=n_games)
+        df = self._feature_engineer_last_n_winner(df, input_n_games=n_games)
 
         features = df.drop(columns=[target_col])
         targets = df[target_col]
@@ -146,5 +145,5 @@ class DataLoader:
 if __name__ == "__main__":
     loader = DataLoader()
     season_df = loader.extract_season("2025-26")
-    feature_engineered_df = loader.feature_engineer_last_n_winner(season_df)
+    feature_engineered_df = loader._feature_engineer_last_n_winner(season_df)
     logger.info(feature_engineered_df.head())

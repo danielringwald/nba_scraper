@@ -26,13 +26,16 @@ def run(
 ):
     # 0. Create dir if does not exist
     ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
+    
+    # 1. Load model configs
+    model_config = MODEL_CONFIGS[model_name]
+    
+    # 2. Load dataset
+    data_loader = DataLoader()
+    loader_fn = getattr(data_loader, model_config["data_loader_method_name"])
+    X, y = loader_fn(season, n_games)
 
-    # 1. Load dataset
-    loader = DataLoader()
-    # TODO abstract away data_loader method to model configs
-    X, y = loader.load_last_n_games_dataset(season, n_games)
-
-    # 2. Split
+    # 3. Split
     X_train, X_val, y_train, y_val = train_test_split(
         X,
         y,
@@ -41,19 +44,18 @@ def run(
         stratify=y,
     )
 
-    # 3. Preprocess
+    # 4. Preprocess
     preprocess = Preprocess()
     X_train_t = preprocess.fit_transform(X_train)
 
-    # 4. Train model
-    model_config = MODEL_CONFIGS[model_name]
+    # 5. Train model
     model = MODEL_REGISTRY[model_config["model_class"]](model_config["model_params"])
     model.fit(X_train_t, y_train)
 
-    # 5. Evaluate
+    # 6. Evaluate
     metrics = evaluate(model, preprocess, X_val, y_val)
 
-    # 6. Persist artifacts
+    # 7. Persist artifacts
     joblib.dump(model, MODEL_PATH)
     joblib.dump(preprocess, PREPROCESS_PATH)
     joblib.dump(model_config, ARTIFACT_DIR / "model_config.joblib")

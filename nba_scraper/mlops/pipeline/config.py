@@ -2,6 +2,7 @@ MODEL_CONFIGS = {
     "last_n_games_random_forest": {
         "target": "won_game",
         "features": ["avg_pts_last5", "avg_reb_last5", "win_rate_last5"],
+        "data_loader_method_name": "load_last_n_games_dataset",
         "model_class": "RandomForestClassifier",
         "model_params": {"n_estimators": 200},
         "preprocess_fn": "preprocess_for_win",
@@ -15,7 +16,6 @@ MODEL_CONFIGS = {
         "preprocess_fn": "preprocess_for_score",
     }
 }
-
 
 class LastNGamesFeatures:
 
