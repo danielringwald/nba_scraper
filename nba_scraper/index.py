@@ -1,12 +1,6 @@
 import dash
-<<<<<<< Updated upstream
-||||||| Stash base
-from dash import dcc, html
-from dash.dependencies import Input, Output
-=======
 from dash import dcc, html, dash_table
 from dash.dependencies import Input, Output
->>>>>>> Stashed changes
 import dash_bootstrap_components as dbc
 import plotly.express as px
 from dash import dash_table, dcc, html
@@ -191,7 +185,6 @@ def top_player_stats(_):
 def fetch_box_score_game(game: str):
     df = get_box_score_for_game(game)
 
-<<<<<<< Updated upstream
     return dash_table.DataTable(
         data=df.to_dict('records'),
         columns=[{"name": i, "id": i} for i in df.columns],
@@ -199,42 +192,3 @@ def fetch_box_score_game(game: str):
         style_cell={'textAlign': 'left'},
         page_size=50,
     )
-
-
-# STATS DASHBOARD
-
-@app.callback(
-    Output('stat-container', 'children'),
-    [Input('team-dropdown', 'value'),
-     Input('season-dropdown', 'value'),
-     Input('stat-dropdown', 'value')]
-)
-def analyze_column(team, season, stat):
-    if team is None or season is None or stat is None:
-        return "Please select a team, season, and stat."
-
-    try:
-        data = StatsPage.get_analyzer_data(team, season, stat)
-        return dash_table.DataTable(
-            data=data.to_dict('records'),
-            columns=[{"name": i, "id": i} for i in data.columns],
-            style_table={'overflowX': 'auto'},
-            style_cell={'textAlign': 'left'},
-            page_size=50,
-            sort_action='native',
-            sort_mode='multi',
-        )
-    except Exception as e:
-        logging.error(traceback.format_exc())
-        return f"Error fetching data: {e}"
-||||||| Stash base
-    return dbc.Table.from_dataframe(df, striped=True, bordered=True, hover=True)
-=======
-    return dash_table.DataTable(
-        data=df.to_dict('records'),
-        columns=[{"name": i, "id": i} for i in df.columns],
-        style_table={'overflowX': 'auto'},
-        style_cell={'textAlign': 'left'},
-        page_size=50,
-    )
->>>>>>> Stashed changes

@@ -11,6 +11,7 @@ from nba_scraper.configuration.database_config import (
     TeamInformationColumn as tic
 )
 from nba_scraper.mlops.pipeline.config import LastNGamesFeatures as lngf
+from nba_scraper.mlops.data.data_helper import PointDiffHelper
 
 from nba_scraper.configuration.logging_config import init_logging
 init_logging()
@@ -30,6 +31,7 @@ class DataLoader:
 
     def extract_season(self, season: str) -> pd.DataFrame:
         rows = self.season_games_repo.get_season_games(season=season)
+        logger.info("Extracted data for season %s", season)
         return pd.DataFrame(rows)
 
     def feature_engineer(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -65,6 +67,7 @@ class DataLoader:
         # 2. For all teams, for each last n_games games, check the outcome of the next
         dict_rows_for_df = []
 
+        n_games = None
         for team_name_information in self.team_name_repo.get_all_teams_information():
             team_abbreviation = team_name_information[tic.TEAM_ABBREVIATION]
             logger.debug("Processing team: %s", team_abbreviation)
@@ -123,7 +126,24 @@ class DataLoader:
         targets = df[target_col]
 
         return features, targets
+    
+    def load_point_diff_dataset(self, season: str, target_col: str = lngf.WINNER, input_n_games: int = 5) -> tuple[pd.DataFrame, pd.Series]:
+        df = self.extract_season(season)
+        df = self._feature_engineer_point_diff(df, input_n_games)
+        
+        features = df.drop(columns=[target_col])
+        targets = df[target_col]
+        
+        return features, targets
 
+    def _feature_engineer_point_diff(self, input_df: pd.DataFrame, input_n_games: int) -> pd.DataFrame:
+        df: pd.DataFrame = input_df.copy()
+
+        # 1. Append winner column
+        
+
+        # 2. 
+        return pd.DataFrame()
 
     def _append_season_game_home_winner_df(self, df: pd.DataFrame) -> pd.DataFrame:
         df[HOME_WINNER_COLUMN] = (df[sgc.HOME_TEAM_SCORE]
@@ -143,6 +163,7 @@ class DataLoader:
 
 
 if __name__ == "__main__":
+    # Just for testing purposes
     loader = DataLoader()
     season_df = loader.extract_season("2025-26")
     feature_engineered_df = loader._feature_engineer_last_n_winner(season_df)

@@ -51,11 +51,11 @@ class SeasonGamesRepository(CommonRepository):
             "OR": {"home_team_id": team_id, "away_team_id": team_id}}
 
         result = self._database_select_all(
-            where_clause_parameter_map=where_clause_parameters)[0:limit]
+            where_clause_parameter_map=where_clause_parameters)
 
         formatted_result = self._return_list_or_empty(result)
 
         # Sort the list by date descending
         formatted_result.sort(key=lambda x: x['date'], reverse=True)
 
-        return formatted_result
+        return formatted_result[0:limit]

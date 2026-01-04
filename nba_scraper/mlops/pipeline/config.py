@@ -1,3 +1,5 @@
+from abc import ABC
+
 MODEL_CONFIGS = {
     "last_n_games_random_forest": {
         "target": "won_game",
@@ -14,10 +16,23 @@ MODEL_CONFIGS = {
         "model_class": "XGBRegressor",
         "model_params": {"max_depth": 5},
         "preprocess_fn": "preprocess_for_score",
+    },
+    
+    "xgboost_20_features": {
+        "target": "won_game",
+        "data_loader_method_name": "load_xgboost_20_features_dataset",
+        "model_class": "XGBRegressor",
+        "model_params": {"max_depth": 5},
+        "preprocessor_fn": 
     }
 }
 
-class LastNGamesFeatures:
+class CommonFeatures(ABC):
+
+    GAME_ID = "game_id"
+    DATE = "date"
+    
+class LastNGamesFeatures(CommonFeatures):
 
     WINNER = "winner"
 
@@ -32,3 +47,18 @@ class LastNGamesFeatures:
     """ Should be like "WON_LAST_GAME_X" where X is the number"""
 
     ROLLING_WIN_RATE = "rolling_win_rate"
+
+class PointDiffFeatures(CommonFeatures):
+    
+    POINT_DIFF = "point_diff"
+    POINTS_SCORED = "points_scored"
+    POINTS_ALLOWED = "points_allowed"
+    
+    IS_HOME = "is_home" 
+    TEAM_ABBREVIATION = "team_abbreviation"
+    
+    AVG_POINT_DIFF_LAST_N = "avg_point_diff_last_n"
+    AVG_POINTS_SCORED_LAST_N = "avg_points_scored_last_n"
+    AVG_POINTS_ALLOWED_LAST_N = "avg_points_allowed_last_n"
+    DAYS_SINCE_LAST_GAME = "days_since_last_game"
+    IS_BACK_TO_BACK = "is_back_to_back"

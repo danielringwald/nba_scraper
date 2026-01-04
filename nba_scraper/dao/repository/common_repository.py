@@ -2,6 +2,7 @@ from abc import ABC
 import duckdb
 import re
 import logging
+from typing import Any
 
 from nba_scraper.utils import Utils
 from nba_scraper.configuration.database_config import DATABASE_PATH
@@ -33,19 +34,19 @@ class CommonRepository(ABC):
             raise ValueError(
                 f"Invalid season range: {season}. Expected consecutive years.")
 
-    def _database_select_all(self, where_clause_parameter_map: dict[str, any] = None, order_by: str = None) -> list[tuple]:
+    def _database_select_all(self, where_clause_parameter_map: dict[str, Any] = None, order_by: str = None) -> list[tuple]:
         """
             where_clause takes arguemnts as a dict where the key is the column and the value is the value of the column
         """
         return self._database_perform_select(where_clause_parameter_map, order_by).fetchall()
 
-    def _database_select_one(self, where_clause_parameter_map: dict[str, any]):
+    def _database_select_one(self, where_clause_parameter_map: dict[str, Any]):
         """
             where_clause takes arguemnts as a dict where the key is the column and the value is the value of the column
         """
         return self._database_perform_select(where_clause_parameter_map).fetchone()
 
-    def _database_perform_select(self, where_clause_parameter_map: dict[str, any] = None, order_by: str = None) -> duckdb.DuckDBPyConnection:
+    def _database_perform_select(self, where_clause_parameter_map: dict[str, Any] = None, order_by: str = None) -> duckdb.DuckDBPyConnection:
         if where_clause_parameter_map is None:
             # Due to a dict being mutable we cannot use it as a default parameter
             # Calling function without where clause could modify the default parameter for future calls
@@ -69,7 +70,7 @@ class CommonRepository(ABC):
 
         return query_result
 
-    def _create_where_clause(self, where_clause_parameter_map: dict[str, any]) -> tuple[str, list[str]]:
+    def _create_where_clause(self, where_clause_parameter_map: dict[str, Any]) -> tuple[str, list[str]]:
         """
             If where_clause_parameter_map is just key-values, then it will default to "AND" logic. 
 
@@ -125,6 +126,15 @@ class CommonRepository(ABC):
         return [row[1] for row in rows]
 
     def _format_result(self, result: list[tuple], include_columns: bool = True) -> list[tuple] | list[dict[str, str]]:
+        """
+        Returns results from database as a list of values, or key-value pairs in a dict
+        
+        :param result: Result from database to format, duckdb returns lists of tuples
+        :param include_columns: if True will return a dict with values, if false a list
+        :return: Returns a list or a tuple depending on the value of include_columns
+        
+        :rtype: list[tuple[Any, ...]] | list[dict[str, str]]
+        """
         result = Utils.to_list(result)
 
         if include_columns:
@@ -135,7 +145,7 @@ class CommonRepository(ABC):
     def _return_tuple_or_empty(self, result: tuple | None) -> tuple:
         if not result:
             return ()
-        return self._format_result(result)
+        return result
 
     def _return_list_or_empty(self, result: list[tuple]) -> list[tuple] | list[dict[str, str]]:
         if not result:

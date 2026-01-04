@@ -65,4 +65,4 @@ def run(
 
 
 if __name__ == "__main__":
-    run()
+    run(season="2024-25", n_games=5)

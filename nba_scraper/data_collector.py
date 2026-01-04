@@ -170,17 +170,7 @@ def extract_box_score_data_from_multiple_csv_files(csv_files: list[str], directo
 
 def extract_data_from_csv_file(csv_file: str, directory: str) -> pd.DataFrame:
     return pd.read_csv(directory + csv_file)
-<<<<<<< Updated upstream
-||||||| Stash base
 
 
 def fetch_column_over_games(data: xr.DataArray, column: str):
-    
     pass
-=======
-
-
-def fetch_column_over_games(data: xr.DataArray, column: str):
-
-    pass
->>>>>>> Stashed changes
