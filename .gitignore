@@ -1,3 +1,6 @@
+.env
+.venv
+
 /nba_scraper/data/*
 !/nba_scraper/data/.gitkeep
 __pycache__
