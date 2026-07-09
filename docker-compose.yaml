@@ -6,7 +6,7 @@ services:
 
     environment:
       POSTGRES_USER: nba_user
-      POSTGRES_PASSWORD: this_is_not_a_bad_password123
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: nba_database
 
     ports:

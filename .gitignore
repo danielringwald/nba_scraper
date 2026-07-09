@@ -1,5 +1,5 @@
-.env
-.venv
+*.env
+*.venv
 
 /nba_scraper/data/*
 !/nba_scraper/data/.gitkeep
