@@ -22,11 +22,11 @@ def upgrade() -> None:
     op.create_table(
         "teams",
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("name", sa.String(), nullable=False),
         sa.Column("abbreviation", sa.String(), nullable=False),
-        sa.Column("conference", sa.String(), nullable=True),
-        sa.Column("division", sa.String(), nullable=True),
+        sa.Column("city", sa.String(), nullable=False),
+        sa.Column("name", sa.String(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("abbreviation")
     )
 
 
