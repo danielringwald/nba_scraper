@@ -1,0 +1,111 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# ----------------------------------------
+# Configuration
+# ----------------------------------------
+
+HOST="hostup-sync"
+PROJECT_DIR="/root/nba_scraper"
+
+# ----------------------------------------
+# Helper
+# ----------------------------------------
+
+run_remote() {
+    echo "Connecting to $HOST..."
+    ssh "$HOST" "cd '$PROJECT_DIR' && $1"
+}
+
+# ----------------------------------------
+# Commands
+# ----------------------------------------
+
+deploy() {
+    echo "🚀 Deploying..."
+
+    run_remote "
+        git pull --ff-only &&
+        docker compose up --build -d &&
+        docker image prune -f
+    "
+
+    echo
+    echo "Container status:"
+    run_remote "docker compose ps"
+
+    echo
+    echo "✅ Deployment complete."
+}
+
+logs() {
+    run_remote "docker compose logs -f"
+}
+
+status() {
+    run_remote "docker compose ps"
+}
+
+restart() {
+    run_remote "docker compose restart"
+}
+
+stop() {
+    run_remote "docker compose down"
+}
+
+start() {
+    run_remote "docker compose up -d"
+}
+
+shell() {
+    ssh "$HOST"
+}
+
+update() {
+    run_remote "git pull --ff-only"
+}
+
+# ----------------------------------------
+# CLI
+# ----------------------------------------
+
+case "${1:-deploy}" in
+    deploy)
+        deploy
+        ;;
+    logs)
+        logs
+        ;;
+    status)
+        status
+        ;;
+    restart)
+        restart
+        ;;
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    shell)
+        shell
+        ;;
+    update)
+        update
+        ;;
+    *)
+        echo "Usage:"
+        echo "  deploy          Pull latest code and rebuild containers"
+        echo "  status          Show container status"
+        echo "  logs            Follow docker logs"
+        echo "  restart         Restart containers"
+        echo "  start           Start containers"
+        echo "  stop            Stop containers"
+        echo "  update          Only git pull"
+        echo "  shell           SSH into the VPS"
+        exit 1
+        ;;
+esac
